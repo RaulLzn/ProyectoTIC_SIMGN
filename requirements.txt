@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+pandas
+requests
+openpyxl
+sqlalchemy
+apscheduler
+python-multipart
+beautifulsoup4

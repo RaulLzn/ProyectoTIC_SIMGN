@@ -1,0 +1,71 @@
+import pandas as pd
+import requests
+from sqlalchemy.orm import Session
+from models import Royalty
+from database import SessionLocal
+import datetime
+
+SOCRATA_URL = "https://www.datos.gov.co/resource/j7js-yk74.json"
+
+def extract_royalties():
+    print("Extracting Royalties data...")
+    try:
+        # Limit to 1000 for demo purposes, can be paginated
+        response = requests.get(f"{SOCRATA_URL}?$limit=1000")
+        response.raise_for_status()
+        data = response.json()
+        return pd.DataFrame(data)
+    except Exception as e:
+        print(f"Error extracting royalties: {e}")
+        return pd.DataFrame()
+
+def transform_royalties(df: pd.DataFrame):
+    print("Transforming Royalties data...")
+    if df.empty:
+        return []
+    
+    transformed_data = []
+    for _, row in df.iterrows():
+        try:
+            # Map fields based on Socrata column names (usually lowercase)
+            # Adjust column names based on actual API response if needed
+            item = Royalty(
+                departamento=row.get("departamento"),
+                municipio=row.get("municipio_productor"),
+                campo=row.get("campo"),
+                contrato=row.get("contrato"),
+                periodo=row.get("periodo"), # e.g. "2023" or "2023-1"
+                producto=row.get("producto"),
+                tipo_regalia=row.get("tipo_regalia"),
+                valor_liquidado=float(row.get("valor_liquidado", 0)),
+                fecha_carga=datetime.datetime.utcnow()
+            )
+            transformed_data.append(item)
+        except Exception as e:
+            print(f"Error transforming row: {e}")
+            continue
+    return transformed_data
+
+def load_royalties(data: list, db: Session):
+    print(f"Loading {len(data)} Royalties records...")
+    try:
+        # Optional: Clear existing data or handle duplicates
+        # db.query(Royalty).delete() 
+        
+        db.add_all(data)
+        db.commit()
+        print("Royalties loaded successfully.")
+    except Exception as e:
+        print(f"Error loading royalties: {e}")
+        db.rollback()
+
+def run_royalties_etl():
+    df = extract_royalties()
+    if not df.empty:
+        data = transform_royalties(df)
+        db = SessionLocal()
+        load_royalties(data, db)
+        db.close()
+
+if __name__ == "__main__":
+    run_royalties_etl()
