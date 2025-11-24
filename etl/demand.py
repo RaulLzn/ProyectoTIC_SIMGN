@@ -97,6 +97,7 @@ def transform_demand(df: pd.DataFrame):
 def load_demand(data: list, db: Session):
     print(f"Loading {len(data)} Demand records...")
     try:
+        db.query(Demand).delete()
         db.add_all(data)
         db.commit()
         print("Demand loaded successfully.")

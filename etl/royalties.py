@@ -14,7 +14,9 @@ def extract_royalties():
         response = requests.get(f"{SOCRATA_URL}?$limit=1000")
         response.raise_for_status()
         data = response.json()
-        return pd.DataFrame(data)
+        df = pd.DataFrame(data)
+        print("DEBUG - Columnas encontradas:", df.columns.tolist())
+        return df
     except Exception as e:
         print(f"Error extracting royalties: {e}")
         return pd.DataFrame()
@@ -31,13 +33,13 @@ def transform_royalties(df: pd.DataFrame):
             # Adjust column names based on actual API response if needed
             item = Royalty(
                 departamento=row.get("departamento"),
-                municipio=row.get("municipio_productor"),
+                municipio=row.get("municipio"), # Updated from municipio_productor
                 campo=row.get("campo"),
                 contrato=row.get("contrato"),
-                periodo=row.get("periodo"), # e.g. "2023" or "2023-1"
-                producto=row.get("producto"),
-                tipo_regalia=row.get("tipo_regalia"),
-                valor_liquidado=float(row.get("valor_liquidado", 0)),
+                periodo=str(row.get("a_o")), # Updated from periodo
+                producto=row.get("tipoprod"), # Updated from producto
+                tipo_regalia=row.get("regimenreg"), # Updated from tipo_regalia
+                valor_liquidado=float(str(row.get("regaliascop", 0)).replace(',', '.')), # Handle comma decimal
                 fecha_carga=datetime.datetime.utcnow()
             )
             transformed_data.append(item)
@@ -50,7 +52,7 @@ def load_royalties(data: list, db: Session):
     print(f"Loading {len(data)} Royalties records...")
     try:
         # Optional: Clear existing data or handle duplicates
-        # db.query(Royalty).delete() 
+        db.query(Royalty).delete()
         
         db.add_all(data)
         db.commit()

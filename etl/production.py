@@ -53,7 +53,9 @@ def extract_production():
         # Usually these files have a specific format. 
         # For this demo, we'll try to read the first sheet and look for standard columns.
         with io.BytesIO(response.content) as f:
-            df = pd.read_excel(f)
+            # Intento genérico: header=0. 
+            # Si falla, prueba con header=5 o busca la fila donde empiece la palabra "CAMPO"
+            df = pd.read_excel(f, header=0)
             
         return df
     except Exception as e:
@@ -96,6 +98,7 @@ def transform_production(df: pd.DataFrame):
 def load_production(data: list, db: Session):
     print(f"Loading {len(data)} Production records...")
     try:
+        db.query(Production).delete()
         db.add_all(data)
         db.commit()
         print("Production loaded successfully.")
