@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from database import get_db
 import models
+import schemas
 from typing import List, Optional
 
 router = APIRouter()
@@ -11,9 +12,8 @@ def health_check():
     return {"status": "ok"}
 
 # --- Royalties Endpoints ---
-@router.get("/royalties", response_model=List[dict])
+@router.get("/royalties", response_model=List[schemas.Royalty])
 def get_royalties(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    # Return as dicts for simplicity, or define Pydantic schemas
     royalties = db.query(models.Royalty).offset(skip).limit(limit).all()
     return royalties
 
@@ -25,7 +25,7 @@ def get_royalties_stats(db: Session = Depends(get_db)):
     return {"total_records": count, "total_value_liquidado": total}
 
 # --- Production Endpoints ---
-@router.get("/production", response_model=List[dict])
+@router.get("/production", response_model=List[schemas.Production])
 def get_production(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     production = db.query(models.Production).offset(skip).limit(limit).all()
     return production
@@ -38,7 +38,7 @@ def get_production_stats(db: Session = Depends(get_db)):
     return {"total_records": count, "total_production_kpc": total}
 
 # --- Demand Endpoints ---
-@router.get("/demand", response_model=List[dict])
+@router.get("/demand", response_model=List[schemas.Demand])
 def get_demand(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     demand = db.query(models.Demand).offset(skip).limit(limit).all()
     return demand

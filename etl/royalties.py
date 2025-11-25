@@ -8,18 +8,42 @@ import datetime
 SOCRATA_URL = "https://www.datos.gov.co/resource/j7js-yk74.json"
 
 def extract_royalties():
-    print("Extracting Royalties data...")
+    """
+    Extrae TODOS los registros de regalías usando paginación.
+    """
+    print("🔍 Iniciando extracción completa de Regalías...")
+    all_data = []
+    limit = 5000
+    offset = 0
+    
     try:
-        # Limit to 1000 for demo purposes, can be paginated
-        response = requests.get(f"{SOCRATA_URL}?$limit=1000")
-        response.raise_for_status()
-        data = response.json()
-        df = pd.DataFrame(data)
-        print("DEBUG - Columnas encontradas:", df.columns.tolist())
+        while True:
+            print(f"   📥 Descargando lote: offset={offset}, limit={limit}...")
+            url = f"{SOCRATA_URL}?$limit={limit}&$offset={offset}"
+            response = requests.get(url, timeout=30)
+            response.raise_for_status()
+            
+            data = response.json()
+            if not data:
+                break
+                
+            all_data.extend(data)
+            print(f"   ✅ Lote recibido: {len(data)} registros. Total acumulado: {len(all_data)}")
+            
+            if len(data) < limit:
+                break
+                
+            offset += limit
+            
+        df = pd.DataFrame(all_data)
+        print(f"   🎉 Extracción finalizada. Total registros: {len(df)}")
+        if not df.empty:
+             print("DEBUG - Columnas encontradas:", df.columns.tolist())
         return df
+
     except Exception as e:
-        print(f"Error extracting royalties: {e}")
-        return pd.DataFrame()
+        print(f"   ❌ Error extrayendo regalías: {e}")
+        return pd.DataFrame(all_data) if all_data else pd.DataFrame()
 
 def transform_royalties(df: pd.DataFrame):
     print("Transforming Royalties data...")
