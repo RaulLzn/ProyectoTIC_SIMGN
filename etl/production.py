@@ -73,7 +73,8 @@ def parse_production_excel_multi_sheet(file_buffer, limit_sheets=None):
         for sheet_name in sheets:
             try:
                 df = pd.read_excel(file_buffer, sheet_name=sheet_name, header=None)
-                campo = sheet_name.split('_')[0] if '_' in sheet_name else sheet_name
+                # Usar nombre completo de la hoja para mejor matching con el diccionario
+                campo = sheet_name.strip()
                 
                 # Buscar fila de años
                 year_row_idx = None
@@ -214,6 +215,32 @@ def extract_production(limit_files=10):
         print("\n⚠️ No se descargó ningún archivo exitosamente")
         return pd.DataFrame()
 
+def load_location_dictionary():
+    """
+    Carga el diccionario de ubicaciones desde el CSV
+    Retorna un dict: {nombre_excel: {'departamento': ..., 'municipio': ...}}
+    """
+    try:
+        # Ruta relativa o absoluta al archivo
+        csv_path = "DiccionarioDatosDeProduccion.csv"
+        df = pd.read_csv(csv_path)
+        
+        location_map = {}
+        for _, row in df.iterrows():
+            # Normalizar clave (nombre en excel)
+            key = str(row['Nombre en el Excel']).strip()
+            
+            location_map[key] = {
+                'departamento': str(row['Departamento']).strip(),
+                'municipio': str(row['Municipio / Ubicación']).strip()
+            }
+            
+        print(f"📚 Diccionario cargado: {len(location_map)} entradas")
+        return location_map
+    except Exception as e:
+        print(f"⚠️ Error cargando diccionario: {e}")
+        return {}
+
 def transform_production(df: pd.DataFrame):
     """
     Transforma los datos con mapeo robusto de columnas
@@ -223,6 +250,30 @@ def transform_production(df: pd.DataFrame):
     if df.empty:
         return []
     
+    # Cargar diccionario
+    location_map = load_location_dictionary()
+    
+    # Pre-procesar claves del diccionario para búsqueda normalizada
+    # Normalizamos: minúsculas, sin espacios extra, sin caracteres especiales
+    def normalize_key(text):
+        if not isinstance(text, str): return ""
+        # Eliminar prefijos numéricos (ej: "1-", "10-")
+        text = re.sub(r'^\d+[-_\s]*', '', text)
+        # Reemplazar guiones y guiones bajos por espacios
+        text = text.replace('-', ' ').replace('_', ' ')
+        # Eliminar caracteres no alfanuméricos (excepto espacios)
+        text = re.sub(r'[^\w\s]', '', text)
+        # Normalizar espacios y minúsculas
+        return " ".join(text.lower().split())
+
+    normalized_map = {}
+    if location_map:
+        for key, val in location_map.items():
+            norm_key = normalize_key(key)
+            if norm_key:
+                normalized_map[norm_key] = val
+        print(f"   🔑 Diccionario normalizado: {len(normalized_map)} entradas")
+
     transformed_data = []
     
     # Normalizar columnas
@@ -231,20 +282,57 @@ def transform_production(df: pd.DataFrame):
     
     print(f"   Columnas: {df.columns.tolist()[:8]}...")
     
+    matches_found = 0
+    
     for _, row in df.iterrows():
         try:
             # Mapeo flexible
-            campo = str(row.get('campo', row.get('field', row.get('nombre_campo', 
+            campo_raw = str(row.get('campo', row.get('field', row.get('nombre_campo', 
                                 row.get('nombre', 'Unknown')))))
+            
+            # Intentar matching robusto
+            # 1. Búsqueda exacta
+            loc_info = location_map.get(campo_raw.strip())
+            
+            # 2. Búsqueda normalizada
+            norm_campo = normalize_key(campo_raw)
+            if not loc_info:
+                loc_info = normalized_map.get(norm_campo)
+            
+            # 3. Búsqueda parcial (substring)
+            if not loc_info:
+                for map_key, val in normalized_map.items():
+                    if map_key in norm_campo or norm_campo in map_key:
+                        loc_info = val
+                        break
+            
+            # 4. Búsqueda por tokens (primer token coincide)
+            # Ej: "apiay libertad" vs "apiay apiay" -> coinciden en "apiay"
+            if not loc_info:
+                campo_tokens = norm_campo.split()
+                if campo_tokens:
+                    first_token = campo_tokens[0]
+                    # Solo confiar si el token tiene longitud razonable (>3 chars) para evitar falsos positivos con "el", "la", etc.
+                    if len(first_token) > 3:
+                        for map_key, val in normalized_map.items():
+                            map_tokens = map_key.split()
+                            if map_tokens and map_tokens[0] == first_token:
+                                loc_info = val
+                                break
+            
+            if loc_info:
+                matches_found += 1
+                departamento = loc_info['departamento']
+                municipio = loc_info['municipio']
+            else:
+                # Fallback a lo que venga en el excel
+                departamento = str(row.get('departamento', row.get('department', 
+                                          row.get('depto', ''))))
+                municipio = str(row.get('municipio', row.get('municipality', 
+                                       row.get('mpio', ''))))
             
             operadora = str(row.get('operadora', row.get('operador', row.get('operator', 
                                    row.get('empresa', 'Unknown')))))
-            
-            departamento = str(row.get('departamento', row.get('department', 
-                                      row.get('depto', ''))))
-            
-            municipio = str(row.get('municipio', row.get('municipality', 
-                                   row.get('mpio', ''))))
             
             # Año y mes - intentar múltiples nombres
             anio = int(row.get('ano', row.get('anio', row.get('year', 
@@ -259,9 +347,9 @@ def transform_production(df: pd.DataFrame):
                                                     row.get('prod', 0)))))
             
             # Solo agregar si tiene datos válidos
-            if produccion > 0 and campo != 'Unknown':
+            if produccion > 0 and campo_raw != 'Unknown':
                 item = Production(
-                    campo=campo[:100],  # Limitar longitud
+                    campo=campo_raw[:100],  # Limitar longitud
                     operadora=operadora[:100],
                     departamento=departamento[:100],
                     municipio=municipio[:100],
@@ -277,6 +365,7 @@ def transform_production(df: pd.DataFrame):
             continue
     
     print(f"   ✓ {len(transformed_data):,} registros válidos")
+    print(f"   ✓ {matches_found:,} coincidencias con diccionario encontradas")
     return transformed_data
 
 def load_production(data: list, db: Session):
@@ -336,4 +425,4 @@ def run_production_etl_multi(limit_files=10):
 if __name__ == "__main__":
     # Procesar 10 archivos por defecto
     # Cambiar a 0 para procesar TODOS (50 archivos)
-    run_production_etl_multi(limit_files=10)
+    run_production_etl_multi(limit_files=0)
