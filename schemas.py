@@ -7,9 +7,21 @@ class RoyaltyBase(BaseModel):
     municipio: Optional[str] = None
     campo: Optional[str] = None
     contrato: Optional[str] = None
-    periodo: Optional[str] = None
-    producto: Optional[str] = None
-    tipo_regalia: Optional[str] = None
+    anio: Optional[int] = None
+    mes: Optional[int] = None
+    
+    volumen_regalia: Optional[float] = None
+    trm_promedio: Optional[float] = None
+    tipo_prod: Optional[str] = None
+    tipo_hidrocarburo: Optional[str] = None
+    regimen: Optional[str] = None
+    prod_gravable: Optional[float] = None
+    precio_usd: Optional[float] = None
+    porc_regalia: Optional[float] = None
+    
+    longitud: Optional[float] = None
+    latitud: Optional[float] = None
+    
     valor_liquidado: Optional[float] = None
 
 class Royalty(RoyaltyBase):

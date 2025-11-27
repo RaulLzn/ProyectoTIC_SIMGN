@@ -10,10 +10,23 @@ class Royalty(Base):
     municipio = Column(String, index=True)
     campo = Column(String, index=True)
     contrato = Column(String)
-    periodo = Column(String) # e.g., "2023-1"
-    producto = Column(String) # Gas, Crudo
-    tipo_regalia = Column(String)
-    valor_liquidado = Column(Float)
+    anio = Column(Integer) # Replaces periodo
+    mes = Column(Integer)
+    
+    # New columns
+    volumen_regalia = Column(Float) # VolumenRegaliaBlsKpc
+    trm_promedio = Column(Float)
+    tipo_prod = Column(String)
+    tipo_hidrocarburo = Column(String)
+    regimen = Column(String) # RegimenReg
+    prod_gravable = Column(Float) # ProdGravableBlsKpc
+    precio_usd = Column(Float) # PrecioHidrocarburoUSD
+    porc_regalia = Column(Float)
+    
+    longitud = Column(Float)
+    latitud = Column(Float)
+    
+    valor_liquidado = Column(Float) # RegaliasCOP
     fecha_carga = Column(DateTime, default=datetime.datetime.utcnow)
 
 class Production(Base):

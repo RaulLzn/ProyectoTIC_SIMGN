@@ -57,13 +57,25 @@ def transform_royalties(df: pd.DataFrame):
             # Adjust column names based on actual API response if needed
             item = Royalty(
                 departamento=row.get("departamento"),
-                municipio=row.get("municipio"), # Updated from municipio_productor
+                municipio=row.get("municipio"),
                 campo=row.get("campo"),
                 contrato=row.get("contrato"),
-                periodo=str(row.get("a_o")), # Updated from periodo
-                producto=row.get("tipoprod"), # Updated from producto
-                tipo_regalia=row.get("regimenreg"), # Updated from tipo_regalia
-                valor_liquidado=float(str(row.get("regaliascop", 0)).replace(',', '.')), # Handle comma decimal
+                anio=int(row.get("a_o")) if row.get("a_o") else None,
+                mes=int(row.get("mes")) if row.get("mes") else None,
+                
+                volumen_regalia=float(str(row.get("volumenregaliablskpc", 0)).replace(',', '.')),
+                trm_promedio=float(str(row.get("trmpromedio", 0)).replace(',', '.')),
+                tipo_prod=row.get("tipoprod"),
+                tipo_hidrocarburo=row.get("tipohidrocarburo"),
+                regimen=row.get("regimenreg"),
+                prod_gravable=float(str(row.get("prodgravableblskpc", 0)).replace(',', '.')),
+                precio_usd=float(str(row.get("preciohidrocarburousd", 0)).replace(',', '.')),
+                porc_regalia=float(str(row.get("porcregalia", 0)).replace(',', '.')),
+                
+                longitud=float(str(row.get("longitud", 0)).replace(',', '.')) if row.get("longitud") else None,
+                latitud=float(str(row.get("latitud", 0)).replace(',', '.')) if row.get("latitud") else None,
+                
+                valor_liquidado=float(str(row.get("regaliascop", 0)).replace(',', '.')),
                 fecha_carga=datetime.datetime.utcnow()
             )
             transformed_data.append(item)

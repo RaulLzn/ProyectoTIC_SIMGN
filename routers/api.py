@@ -13,9 +13,46 @@ def health_check():
 
 # --- Royalties Endpoints ---
 @router.get("/royalties", response_model=List[schemas.Royalty])
-def get_royalties(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    royalties = db.query(models.Royalty).offset(skip).limit(limit).all()
+def get_royalties(
+    departamento: Optional[str] = None,
+    campo: Optional[str] = None,
+    anio_min: Optional[int] = None,
+    anio_max: Optional[int] = None,
+    tipo_hidrocarburo: Optional[str] = None,
+    db: Session = Depends(get_db)
+):
+    query = db.query(models.Royalty)
+    
+    # Apply filters
+    if departamento:
+        query = query.filter(models.Royalty.departamento == departamento)
+    if campo:
+        query = query.filter(models.Royalty.campo == campo)
+    if anio_min:
+        query = query.filter(models.Royalty.anio >= anio_min)
+    if anio_max:
+        query = query.filter(models.Royalty.anio <= anio_max)
+    if tipo_hidrocarburo:
+        query = query.filter(models.Royalty.tipo_hidrocarburo == tipo_hidrocarburo)
+    
+    # Return ALL matching records - no limit
+    royalties = query.all()
     return royalties
+
+@router.get("/royalties/filters")
+def get_royalties_filters(db: Session = Depends(get_db)):
+    """Get available filter options for royalties"""
+    departamentos = db.query(models.Royalty.departamento).distinct().all()
+    campos = db.query(models.Royalty.campo).distinct().all()
+    tipos_hidrocarburo = db.query(models.Royalty.tipo_hidrocarburo).distinct().all()
+    anios = db.query(models.Royalty.anio).distinct().all()
+    
+    return {
+        "departamentos": sorted([d[0] for d in departamentos if d[0]]),
+        "campos": sorted([c[0] for c in campos if c[0]]),
+        "tipos_hidrocarburo": sorted([t[0] for t in tipos_hidrocarburo if t[0]]),
+        "anios": sorted([a[0] for a in anios if a[0]])
+    }
 
 @router.get("/royalties/stats")
 def get_royalties_stats(db: Session = Depends(get_db)):
@@ -26,9 +63,46 @@ def get_royalties_stats(db: Session = Depends(get_db)):
 
 # --- Production Endpoints ---
 @router.get("/production", response_model=List[schemas.Production])
-def get_production(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    production = db.query(models.Production).offset(skip).limit(limit).all()
+def get_production(
+    departamento: Optional[str] = None,
+    campo: Optional[str] = None,
+    operadora: Optional[str] = None,
+    anio_min: Optional[int] = None,
+    anio_max: Optional[int] = None,
+    db: Session = Depends(get_db)
+):
+    query = db.query(models.Production)
+    
+    # Apply filters
+    if departamento:
+        query = query.filter(models.Production.departamento == departamento)
+    if campo:
+        query = query.filter(models.Production.campo == campo)
+    if operadora:
+        query = query.filter(models.Production.operadora == operadora)
+    if anio_min:
+        query = query.filter(models.Production.anio >= anio_min)
+    if anio_max:
+        query = query.filter(models.Production.anio <= anio_max)
+    
+    # Return ALL matching records - no limit
+    production = query.all()
     return production
+
+@router.get("/production/filters")
+def get_production_filters(db: Session = Depends(get_db)):
+    """Get available filter options for production"""
+    departamentos = db.query(models.Production.departamento).distinct().all()
+    campos = db.query(models.Production.campo).distinct().all()
+    operadoras = db.query(models.Production.operadora).distinct().all()
+    anios = db.query(models.Production.anio).distinct().all()
+    
+    return {
+        "departamentos": sorted([d[0] for d in departamentos if d[0]]),
+        "campos": sorted([c[0] for c in campos if c[0]]),
+        "operadoras": sorted([o[0] for o in operadoras if o[0]]),
+        "anios": sorted([a[0] for a in anios if a[0]])
+    }
 
 @router.get("/production/stats")
 def get_production_stats(db: Session = Depends(get_db)):
