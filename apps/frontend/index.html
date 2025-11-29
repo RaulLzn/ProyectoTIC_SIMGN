@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SIMGN - Sistema Integrado de Monitoreo de Gas Natural</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      /* Custom Scrollbar for a cleaner look */
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #f1f5f9; 
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #cbd5e1; 
+        border-radius: 4px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8; 
+      }
+
+      /* High Contrast Mode */
+      html.high-contrast {
+        filter: contrast(1.5) brightness(1.1);
+      }
+      
+      html.high-contrast body {
+        background-color: #000 !important;
+      }
+      
+      html.high-contrast .bg-white {
+        background-color: #1a1a1a !important;
+        border-color: #444 !important;
+      }
+      
+      html.high-contrast .text-slate-900,
+      html.high-contrast .text-slate-800,
+      html.high-contrast .text-slate-700 {
+        color: #fff !important;
+      }
+      
+      html.high-contrast .text-slate-600,
+      html.high-contrast .text-slate-500 {
+        color: #f0f0f0 !important;
+      }
+
+      /* Large Text Mode */
+      html.large-text {
+        font-size: 120%;
+      }
+      
+      html.large-text .text-xs {
+        font-size: 0.875rem !important;
+      }
+      
+      html.large-text .text-sm {
+        font-size: 1rem !important;
+      }
+      
+      html.large-text .text-base {
+        font-size: 1.125rem !important;
+      }
+      
+      html.large-text .text-lg {
+        font-size: 1.375rem !important;
+      }
+      
+      html.large-text .text-xl {
+        font-size: 1.5rem !important;
+      }
+      
+      html.large-text .text-2xl {
+        font-size: 1.875rem !important;
+      }
+
+      /* Extra Large Text Mode */
+      html.xlarge-text {
+        font-size: 140%;
+      }
+      
+      html.xlarge-text .text-xs {
+        font-size: 1rem !important;
+      }
+      
+      html.xlarge-text .text-sm {
+        font-size: 1.125rem !important;
+      }
+      
+      html.xlarge-text .text-base {
+        font-size: 1.25rem !important;
+      }
+      
+      html.xlarge-text .text-lg {
+        font-size: 1.5rem !important;
+      }
+      
+      html.xlarge-text .text-xl {
+        font-size: 1.75rem !important;
+      }
+      
+      html.xlarge-text .text-2xl {
+        font-size: 2rem !important;
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react-router-dom": "https://aistudiocdn.com/react-router-dom@^7.9.6",
+    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.554.0",
+    "recharts": "https://aistudiocdn.com/recharts@^3.5.0"
+  }
+}
+</script>
+</head>
+  <body class="bg-slate-50 text-slate-900 font-sans antialiased overflow-hidden">
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>

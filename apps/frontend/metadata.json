@@ -1,0 +1,5 @@
+{
+  "name": "SIMGN - Sistema Integrado de Monitoreo de Gas Natural",
+  "description": "Dashboard interactivo para el monitoreo de producción, demanda y regalías de gas natural en Colombia. Prototipo funcional basado en los requerimientos del Ministerio de Minas y Energía.",
+  "requestFramePermissions": []
+}
