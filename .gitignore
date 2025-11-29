@@ -8,8 +8,6 @@
 __pycache__/
 *.py[cod]
 .venv/
-*.db
-data.db
 
 # Frontend
 node_modules/

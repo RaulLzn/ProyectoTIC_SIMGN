@@ -37,12 +37,6 @@ venv.bak/
 *~
 .DS_Store
 
-# Database
-*.db
-*.sqlite
-*.sqlite3
-data.db
-
 # Logs
 *.log
 error.log
