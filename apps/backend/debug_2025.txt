@@ -1,0 +1,295 @@
+--- Demand Data Debug ---
+Total records: 8454
+
+Distinct Scenarios:
+['Bajo', 'Medio', 'Alto']
+
+Distinct Sectors:
+['Agregado', 'Compresores', 'Industrial', 'Petrolero', 'Petroquímico', 'Residencial', 'Terciario', 'TermoEléctrico', 'Total', 'Total Sin TermoEléctrico', 'Vehicular (excluye GNL)']
+
+Distinct Regions:
+['CQR', 'Centro', 'Costa Atlántica', 'Costa Interior', 'Magdalena Medio', 'Nacional', 'NorOccidente', 'NorOriente', 'SurOccidente', 'Tolima-Huila']
+
+Sample Record:
+Sector: Agregado, Region: Nacional, Escenario: Bajo, Anio: 2024, Demanda: 1380.7234337788072
+
+--- Breakdown for 2025 ---
+Total records for 2025: 276
+
+Records by Scenario/Sector/Region:
+Scen: Bajo       | Sect: Agregado        | Reg: Nacional             | Val: 1180.8743121089942
+Scen: Bajo       | Sect: Agregado        | Reg: Nacional             | Val: 1205.023521357156
+Scen: Bajo       | Sect: Agregado        | Reg: Nacional             | Val: 1204.7981335087286
+Scen: Bajo       | Sect: Agregado        | Reg: Nacional             | Val: 869.7710240806808
+Scen: Bajo       | Sect: Agregado        | Reg: Nacional             | Val: 868.0406808600661
+Scen: Bajo       | Sect: Agregado        | Reg: Nacional             | Val: 881.7783162341374
+Scen: Bajo       | Sect: Agregado        | Reg: Nacional             | Val: 893.4012524282215
+Scen: Bajo       | Sect: Agregado        | Reg: Nacional             | Val: 896.2838322100854
+Scen: Bajo       | Sect: Agregado        | Reg: Nacional             | Val: 905.6779544796209
+Scen: Bajo       | Sect: Agregado        | Reg: Nacional             | Val: 908.7170640453456
+Scen: Bajo       | Sect: Agregado        | Reg: Nacional             | Val: 906.629805833968
+Scen: Bajo       | Sect: Agregado        | Reg: Nacional             | Val: 938.9803669990613
+Scen: Medio      | Sect: Agregado        | Reg: Nacional             | Val: 1375.1152113218
+Scen: Medio      | Sect: Agregado        | Reg: Nacional             | Val: 1411.2107186262629
+Scen: Medio      | Sect: Agregado        | Reg: Nacional             | Val: 980.9300280571935
+Scen: Medio      | Sect: Agregado        | Reg: Nacional             | Val: 955.4785533377534
+Scen: Medio      | Sect: Agregado        | Reg: Nacional             | Val: 934.5778296169033
+Scen: Medio      | Sect: Agregado        | Reg: Nacional             | Val: 981.9450408823501
+Scen: Medio      | Sect: Agregado        | Reg: Nacional             | Val: 959.2036046208364
+Scen: Medio      | Sect: Agregado        | Reg: Nacional             | Val: 968.7013269689186
+Scen: Medio      | Sect: Agregado        | Reg: Nacional             | Val: 1041.3817886863699
+Scen: Medio      | Sect: Agregado        | Reg: Nacional             | Val: 1021.3441933601069
+Scen: Medio      | Sect: Agregado        | Reg: Nacional             | Val: 1039.118977262995
+Scen: Medio      | Sect: Agregado        | Reg: Nacional             | Val: 1049.8029100893145
+Scen: Alto       | Sect: Agregado        | Reg: Nacional             | Val: 1592.9976607340675
+Scen: Alto       | Sect: Agregado        | Reg: Nacional             | Val: 1630.0617884275914
+Scen: Alto       | Sect: Agregado        | Reg: Nacional             | Val: 1100.1414328546834
+Scen: Alto       | Sect: Agregado        | Reg: Nacional             | Val: 1073.9976752260034
+Scen: Alto       | Sect: Agregado        | Reg: Nacional             | Val: 1056.6956113087608
+Scen: Alto       | Sect: Agregado        | Reg: Nacional             | Val: 1105.792652027504
+Scen: Alto       | Sect: Agregado        | Reg: Nacional             | Val: 1084.7485681026976
+Scen: Alto       | Sect: Agregado        | Reg: Nacional             | Val: 1093.6085454236077
+Scen: Alto       | Sect: Agregado        | Reg: Nacional             | Val: 1166.1178862338395
+Scen: Alto       | Sect: Agregado        | Reg: Nacional             | Val: 1148.2667719892904
+Scen: Alto       | Sect: Agregado        | Reg: Nacional             | Val: 1168.667816349203
+Scen: Alto       | Sect: Agregado        | Reg: Nacional             | Val: 1180.481654279861
+Scen: Medio      | Sect: Agregado        | Reg: Centro               | Val: 279.20402970927034
+Scen: Medio      | Sect: Agregado        | Reg: Centro               | Val: 288.50780539063106
+Scen: Medio      | Sect: Agregado        | Reg: Centro               | Val: 282.69432137149414
+Scen: Medio      | Sect: Agregado        | Reg: Centro               | Val: 282.66736952093225
+Scen: Medio      | Sect: Agregado        | Reg: Centro               | Val: 277.58670280130855
+Scen: Medio      | Sect: Agregado        | Reg: Centro               | Val: 284.3456688824693
+Scen: Medio      | Sect: Agregado        | Reg: Centro               | Val: 278.1644642845089
+Scen: Medio      | Sect: Agregado        | Reg: Centro               | Val: 288.8976696456134
+Scen: Medio      | Sect: Agregado        | Reg: Centro               | Val: 298.3615064718815
+Scen: Medio      | Sect: Agregado        | Reg: Centro               | Val: 290.13641271327066
+Scen: Medio      | Sect: Agregado        | Reg: Centro               | Val: 294.3198738951229
+Scen: Medio      | Sect: Agregado        | Reg: Centro               | Val: 296.75452025784574
+Scen: Medio      | Sect: Agregado        | Reg: Costa Atlántica      | Val: 607.4968996590836
+Scen: Medio      | Sect: Agregado        | Reg: Costa Atlántica      | Val: 653.6498242165004
+Scen: Medio      | Sect: Agregado        | Reg: Costa Atlántica      | Val: 309.2524246492717
+Scen: Medio      | Sect: Agregado        | Reg: Costa Atlántica      | Val: 301.4756456068124
+Scen: Medio      | Sect: Agregado        | Reg: Costa Atlántica      | Val: 302.8101386683868
+Scen: Medio      | Sect: Agregado        | Reg: Costa Atlántica      | Val: 329.72258449918814
+Scen: Medio      | Sect: Agregado        | Reg: Costa Atlántica      | Val: 317.23324906828395
+Scen: Medio      | Sect: Agregado        | Reg: Costa Atlántica      | Val: 316.3898807644568
+Scen: Medio      | Sect: Agregado        | Reg: Costa Atlántica      | Val: 316.31364041810065
+Scen: Medio      | Sect: Agregado        | Reg: Costa Atlántica      | Val: 309.4820568599034
+Scen: Medio      | Sect: Agregado        | Reg: Costa Atlántica      | Val: 321.1774028794921
+Scen: Medio      | Sect: Agregado        | Reg: Costa Atlántica      | Val: 323.2401891491661
+Scen: Medio      | Sect: Agregado        | Reg: Costa Interior       | Val: 4.985004704959479
+Scen: Medio      | Sect: Agregado        | Reg: Costa Interior       | Val: 5.330424603100987
+Scen: Medio      | Sect: Agregado        | Reg: Costa Interior       | Val: 4.996396464182797
+Scen: Medio      | Sect: Agregado        | Reg: Costa Interior       | Val: 4.976695377495552
+Scen: Medio      | Sect: Agregado        | Reg: Costa Interior       | Val: 4.688125903044085
+Scen: Medio      | Sect: Agregado        | Reg: Costa Interior       | Val: 4.783033527434693
+Scen: Medio      | Sect: Agregado        | Reg: Costa Interior       | Val: 4.494834069782204
+Scen: Medio      | Sect: Agregado        | Reg: Costa Interior       | Val: 4.609242733297642
+Scen: Medio      | Sect: Agregado        | Reg: Costa Interior       | Val: 4.918124207995021
+Scen: Medio      | Sect: Agregado        | Reg: Costa Interior       | Val: 4.9567932753875805
+Scen: Medio      | Sect: Agregado        | Reg: Costa Interior       | Val: 5.017019236451323
+Scen: Medio      | Sect: Agregado        | Reg: Costa Interior       | Val: 5.285585992547146
+Scen: Medio      | Sect: Agregado        | Reg: CQR                  | Val: 29.048769264275542
+Scen: Medio      | Sect: Agregado        | Reg: CQR                  | Val: 31.12496979705303
+Scen: Medio      | Sect: Agregado        | Reg: CQR                  | Val: 30.44208780196521
+Scen: Medio      | Sect: Agregado        | Reg: CQR                  | Val: 30.75034407390652
+Scen: Medio      | Sect: Agregado        | Reg: CQR                  | Val: 30.072530892253916
+Scen: Medio      | Sect: Agregado        | Reg: CQR                  | Val: 31.013531849100577
+Scen: Medio      | Sect: Agregado        | Reg: CQR                  | Val: 30.24189449486497
+Scen: Medio      | Sect: Agregado        | Reg: CQR                  | Val: 30.73664307672783
+Scen: Medio      | Sect: Agregado        | Reg: CQR                  | Val: 32.10345852357088
+Scen: Medio      | Sect: Agregado        | Reg: CQR                  | Val: 32.04465093162884
+Scen: Medio      | Sect: Agregado        | Reg: CQR                  | Val: 31.90420274487847
+Scen: Medio      | Sect: Agregado        | Reg: CQR                  | Val: 30.807090882207216
+Scen: Medio      | Sect: Agregado        | Reg: Magdalena Medio      | Val: 287.2394306401514
+Scen: Medio      | Sect: Agregado        | Reg: Magdalena Medio      | Val: 244.8977178380963
+Scen: Medio      | Sect: Agregado        | Reg: Magdalena Medio      | Val: 189.6842006468435
+Scen: Medio      | Sect: Agregado        | Reg: Magdalena Medio      | Val: 170.18977906891982
+Scen: Medio      | Sect: Agregado        | Reg: Magdalena Medio      | Val: 158.40184070977776
+Scen: Medio      | Sect: Agregado        | Reg: Magdalena Medio      | Val: 163.7379819008083
+Scen: Medio      | Sect: Agregado        | Reg: Magdalena Medio      | Val: 163.38922048481766
+Scen: Medio      | Sect: Agregado        | Reg: Magdalena Medio      | Val: 159.86433336071306
+Scen: Medio      | Sect: Agregado        | Reg: Magdalena Medio      | Val: 217.9013514641356
+Scen: Medio      | Sect: Agregado        | Reg: Magdalena Medio      | Val: 216.25925557138012
+Scen: Medio      | Sect: Agregado        | Reg: Magdalena Medio      | Val: 214.1047412891676
+Scen: Medio      | Sect: Agregado        | Reg: Magdalena Medio      | Val: 227.04299986800623
+Scen: Medio      | Sect: Agregado        | Reg: NorOccidente         | Val: 48.19053125259889
+Scen: Medio      | Sect: Agregado        | Reg: NorOccidente         | Val: 51.83121244467492
+Scen: Medio      | Sect: Agregado        | Reg: NorOccidente         | Val: 50.530784319447456
+Scen: Medio      | Sect: Agregado        | Reg: NorOccidente         | Val: 49.993802404995584
+Scen: Medio      | Sect: Agregado        | Reg: NorOccidente         | Val: 49.987234161266144
+Scen: Medio      | Sect: Agregado        | Reg: NorOccidente         | Val: 52.133282866220846
+Scen: Medio      | Sect: Agregado        | Reg: NorOccidente         | Val: 51.38765141129256
+Scen: Medio      | Sect: Agregado        | Reg: NorOccidente         | Val: 52.36871461264193
+Scen: Medio      | Sect: Agregado        | Reg: NorOccidente         | Val: 53.60807854802319
+Scen: Medio      | Sect: Agregado        | Reg: NorOccidente         | Val: 52.94787162310884
+Scen: Medio      | Sect: Agregado        | Reg: NorOccidente         | Val: 53.7028416500685
+Scen: Medio      | Sect: Agregado        | Reg: NorOccidente         | Val: 51.14916824043812
+Scen: Medio      | Sect: Agregado        | Reg: NorOriente           | Val: 24.755676094282094
+Scen: Medio      | Sect: Agregado        | Reg: NorOriente           | Val: 26.582939790449203
+Scen: Medio      | Sect: Agregado        | Reg: NorOriente           | Val: 26.05299455288255
+Scen: Medio      | Sect: Agregado        | Reg: NorOriente           | Val: 26.014959777428384
+Scen: Medio      | Sect: Agregado        | Reg: NorOriente           | Val: 25.79801610445341
+Scen: Medio      | Sect: Agregado        | Reg: NorOriente           | Val: 26.701592457257554
+Scen: Medio      | Sect: Agregado        | Reg: NorOriente           | Val: 25.970222655950842
+Scen: Medio      | Sect: Agregado        | Reg: NorOriente           | Val: 26.346334412415285
+Scen: Medio      | Sect: Agregado        | Reg: NorOriente           | Val: 27.45684363157337
+Scen: Medio      | Sect: Agregado        | Reg: NorOriente           | Val: 26.79669078778586
+Scen: Medio      | Sect: Agregado        | Reg: NorOriente           | Val: 27.846326441247992
+Scen: Medio      | Sect: Agregado        | Reg: NorOriente           | Val: 26.93632168242141
+Scen: Medio      | Sect: Agregado        | Reg: SurOccidente         | Val: 74.76252616185789
+Scen: Medio      | Sect: Agregado        | Reg: SurOccidente         | Val: 89.27738051950456
+Scen: Medio      | Sect: Agregado        | Reg: SurOccidente         | Val: 68.08432302441604
+Scen: Medio      | Sect: Agregado        | Reg: SurOccidente         | Val: 69.67685809656477
+Scen: Medio      | Sect: Agregado        | Reg: SurOccidente         | Val: 66.45763354248251
+Scen: Medio      | Sect: Agregado        | Reg: SurOccidente         | Val: 70.09000412824317
+Scen: Medio      | Sect: Agregado        | Reg: SurOccidente         | Val: 68.95002293347896
+Scen: Medio      | Sect: Agregado        | Reg: SurOccidente         | Val: 69.87716398716294
+Scen: Medio      | Sect: Agregado        | Reg: SurOccidente         | Val: 71.0006714368124
+Scen: Medio      | Sect: Agregado        | Reg: SurOccidente         | Val: 69.38034471797933
+Scen: Medio      | Sect: Agregado        | Reg: SurOccidente         | Val: 71.43341863408848
+Scen: Medio      | Sect: Agregado        | Reg: SurOccidente         | Val: 68.7477502241111
+Scen: Medio      | Sect: Agregado        | Reg: Tolima-Huila         | Val: 19.43234383532067
+Scen: Medio      | Sect: Agregado        | Reg: Tolima-Huila         | Val: 20.008444026252338
+Scen: Medio      | Sect: Agregado        | Reg: Tolima-Huila         | Val: 19.192495226689978
+Scen: Medio      | Sect: Agregado        | Reg: Tolima-Huila         | Val: 19.733099410698
+Scen: Medio      | Sect: Agregado        | Reg: Tolima-Huila         | Val: 18.775606833929942
+Scen: Medio      | Sect: Agregado        | Reg: Tolima-Huila         | Val: 19.417360771627358
+Scen: Medio      | Sect: Agregado        | Reg: Tolima-Huila         | Val: 19.37204521785634
+Scen: Medio      | Sect: Agregado        | Reg: Tolima-Huila         | Val: 19.61134437588955
+Scen: Medio      | Sect: Agregado        | Reg: Tolima-Huila         | Val: 19.718113984277245
+Scen: Medio      | Sect: Agregado        | Reg: Tolima-Huila         | Val: 19.340116879662368
+Scen: Medio      | Sect: Agregado        | Reg: Tolima-Huila         | Val: 19.61315049247764
+Scen: Medio      | Sect: Agregado        | Reg: Tolima-Huila         | Val: 19.839283792571283
+Scen: Medio      | Sect: Agregado        | Reg: Nacional             | Val: 1375.1152113218
+Scen: Medio      | Sect: Agregado        | Reg: Nacional             | Val: 1411.2107186262629
+Scen: Medio      | Sect: Agregado        | Reg: Nacional             | Val: 980.9300280571932
+Scen: Medio      | Sect: Agregado        | Reg: Nacional             | Val: 955.4785533377532
+Scen: Medio      | Sect: Agregado        | Reg: Nacional             | Val: 934.5778296169032
+Scen: Medio      | Sect: Agregado        | Reg: Nacional             | Val: 981.94504088235
+Scen: Medio      | Sect: Agregado        | Reg: Nacional             | Val: 959.2036046208364
+Scen: Medio      | Sect: Agregado        | Reg: Nacional             | Val: 968.7013269689186
+Scen: Medio      | Sect: Agregado        | Reg: Nacional             | Val: 1041.3817886863699
+Scen: Medio      | Sect: Agregado        | Reg: Nacional             | Val: 1021.344193360107
+Scen: Medio      | Sect: Agregado        | Reg: Nacional             | Val: 1039.118977262995
+Scen: Medio      | Sect: Agregado        | Reg: Nacional             | Val: 1049.8029100893143
+Scen: Medio      | Sect: Residencial     | Reg: Nacional             | Val: 168.81493607803515
+Scen: Medio      | Sect: Residencial     | Reg: Nacional             | Val: 179.28567201535884
+Scen: Medio      | Sect: Residencial     | Reg: Nacional             | Val: 173.68385629268022
+Scen: Medio      | Sect: Residencial     | Reg: Nacional             | Val: 178.55493761410958
+Scen: Medio      | Sect: Residencial     | Reg: Nacional             | Val: 176.43876563471665
+Scen: Medio      | Sect: Residencial     | Reg: Nacional             | Val: 182.86016426493498
+Scen: Medio      | Sect: Residencial     | Reg: Nacional             | Val: 174.82968433810487
+Scen: Medio      | Sect: Residencial     | Reg: Nacional             | Val: 180.02272824120823
+Scen: Medio      | Sect: Residencial     | Reg: Nacional             | Val: 185.1344196736931
+Scen: Medio      | Sect: Residencial     | Reg: Nacional             | Val: 182.16771150321813
+Scen: Medio      | Sect: Residencial     | Reg: Nacional             | Val: 185.75721164569202
+Scen: Medio      | Sect: Residencial     | Reg: Nacional             | Val: 179.3044278429911
+Scen: Medio      | Sect: Industrial      | Reg: Nacional             | Val: 270.61443835450046
+Scen: Medio      | Sect: Industrial      | Reg: Nacional             | Val: 284.87694570973514
+Scen: Medio      | Sect: Industrial      | Reg: Nacional             | Val: 279.1471446240977
+Scen: Medio      | Sect: Industrial      | Reg: Nacional             | Val: 274.5540528254031
+Scen: Medio      | Sect: Industrial      | Reg: Nacional             | Val: 274.63592050751424
+Scen: Medio      | Sect: Industrial      | Reg: Nacional             | Val: 280.388618913881
+Scen: Medio      | Sect: Industrial      | Reg: Nacional             | Val: 278.7545849775217
+Scen: Medio      | Sect: Industrial      | Reg: Nacional             | Val: 286.2658788141066
+Scen: Medio      | Sect: Industrial      | Reg: Nacional             | Val: 289.6115812753907
+Scen: Medio      | Sect: Industrial      | Reg: Nacional             | Val: 283.6420036724116
+Scen: Medio      | Sect: Industrial      | Reg: Nacional             | Val: 290.0427087729984
+Scen: Medio      | Sect: Industrial      | Reg: Nacional             | Val: 281.25398416601746
+Scen: Medio      | Sect: Terciario       | Reg: Nacional             | Val: 52.256611261395875
+Scen: Medio      | Sect: Terciario       | Reg: Nacional             | Val: 54.68520515550534
+Scen: Medio      | Sect: Terciario       | Reg: Nacional             | Val: 53.24647044336308
+Scen: Medio      | Sect: Terciario       | Reg: Nacional             | Val: 55.24162194127409
+Scen: Medio      | Sect: Terciario       | Reg: Nacional             | Val: 52.87260648786213
+Scen: Medio      | Sect: Terciario       | Reg: Nacional             | Val: 56.78065121312569
+Scen: Medio      | Sect: Terciario       | Reg: Nacional             | Val: 53.558343996032654
+Scen: Medio      | Sect: Terciario       | Reg: Nacional             | Val: 54.959659086449825
+Scen: Medio      | Sect: Terciario       | Reg: Nacional             | Val: 56.749982645916845
+Scen: Medio      | Sect: Terciario       | Reg: Nacional             | Val: 56.62023697289724
+Scen: Medio      | Sect: Terciario       | Reg: Nacional             | Val: 58.189446754827294
+Scen: Medio      | Sect: Terciario       | Reg: Nacional             | Val: 55.712152212002984
+Scen: Medio      | Sect: Vehicular (excluye GNL) | Reg: Nacional             | Val: 62.280160688109724
+Scen: Medio      | Sect: Vehicular (excluye GNL) | Reg: Nacional             | Val: 68.12814829636928
+Scen: Medio      | Sect: Vehicular (excluye GNL) | Reg: Nacional             | Val: 66.2001267494353
+Scen: Medio      | Sect: Vehicular (excluye GNL) | Reg: Nacional             | Val: 64.57141949199625
+Scen: Medio      | Sect: Vehicular (excluye GNL) | Reg: Nacional             | Val: 66.01879840091117
+Scen: Medio      | Sect: Vehicular (excluye GNL) | Reg: Nacional             | Val: 65.90437860622497
+Scen: Medio      | Sect: Vehicular (excluye GNL) | Reg: Nacional             | Val: 66.10792843780347
+Scen: Medio      | Sect: Vehicular (excluye GNL) | Reg: Nacional             | Val: 67.0298970396454
+Scen: Medio      | Sect: Vehicular (excluye GNL) | Reg: Nacional             | Val: 67.52333316403237
+Scen: Medio      | Sect: Vehicular (excluye GNL) | Reg: Nacional             | Val: 65.22162829235597
+Scen: Medio      | Sect: Vehicular (excluye GNL) | Reg: Nacional             | Val: 65.76595832245104
+Scen: Medio      | Sect: Vehicular (excluye GNL) | Reg: Nacional             | Val: 66.39476970696683
+Scen: Medio      | Sect: Petrolero       | Reg: Nacional             | Val: 208.688411832852
+Scen: Medio      | Sect: Petrolero       | Reg: Nacional             | Val: 209.90959474601073
+Scen: Medio      | Sect: Petrolero       | Reg: Nacional             | Val: 220.5555386458809
+Scen: Medio      | Sect: Petrolero       | Reg: Nacional             | Val: 210.85710760885672
+Scen: Medio      | Sect: Petrolero       | Reg: Nacional             | Val: 213.33457685759657
+Scen: Medio      | Sect: Petrolero       | Reg: Nacional             | Val: 217.61011245939562
+Scen: Medio      | Sect: Petrolero       | Reg: Nacional             | Val: 216.96222824812935
+Scen: Medio      | Sect: Petrolero       | Reg: Nacional             | Val: 213.05389337076087
+Scen: Medio      | Sect: Petrolero       | Reg: Nacional             | Val: 216.04829885674013
+Scen: Medio      | Sect: Petrolero       | Reg: Nacional             | Val: 214.05376031805864
+Scen: Medio      | Sect: Petrolero       | Reg: Nacional             | Val: 211.38413490536018
+Scen: Medio      | Sect: Petrolero       | Reg: Nacional             | Val: 236.45413157894737
+Scen: Medio      | Sect: Petroquímico    | Reg: Nacional             | Val: 5.421236381784946
+Scen: Medio      | Sect: Petroquímico    | Reg: Nacional             | Val: 5.534689244663383
+Scen: Medio      | Sect: Petroquímico    | Reg: Nacional             | Val: 6.402849462365591
+Scen: Medio      | Sect: Petroquímico    | Reg: Nacional             | Val: 6.4223888888888885
+Scen: Medio      | Sect: Petroquímico    | Reg: Nacional             | Val: 6.628526881720431
+Scen: Medio      | Sect: Petroquímico    | Reg: Nacional             | Val: 5.671588888888888
+Scen: Medio      | Sect: Petroquímico    | Reg: Nacional             | Val: 4.790537634408602
+Scen: Medio      | Sect: Petroquímico    | Reg: Nacional             | Val: 5.40925806451613
+Scen: Medio      | Sect: Petroquímico    | Reg: Nacional             | Val: 5.062933333333333
+Scen: Medio      | Sect: Petroquímico    | Reg: Nacional             | Val: 7.127263942700214
+Scen: Medio      | Sect: Petroquímico    | Reg: Nacional             | Val: 4.926140724111106
+Scen: Medio      | Sect: Petroquímico    | Reg: Nacional             | Val: 5.493793124015055
+Scen: Medio      | Sect: TermoEléctrico  | Reg: Nacional             | Val: 597.2483833568587
+Scen: Medio      | Sect: TermoEléctrico  | Reg: Nacional             | Val: 597.2575579726814
+Scen: Medio      | Sect: TermoEléctrico  | Reg: Nacional             | Val: 170.6799118568368
+Scen: Medio      | Sect: TermoEléctrico  | Reg: Nacional             | Val: 153.39179269093842
+Scen: Medio      | Sect: TermoEléctrico  | Reg: Nacional             | Val: 134.22503121561806
+Scen: Medio      | Sect: TermoEléctrico  | Reg: Nacional             | Val: 162.03860219119775
+Scen: Medio      | Sect: TermoEléctrico  | Reg: Nacional             | Val: 154.66897451318513
+Scen: Medio      | Sect: TermoEléctrico  | Reg: Nacional             | Val: 151.27790129579412
+Scen: Medio      | Sect: TermoEléctrico  | Reg: Nacional             | Val: 208.80983980766564
+Scen: Medio      | Sect: TermoEléctrico  | Reg: Nacional             | Val: 200.8702167761449
+Scen: Medio      | Sect: TermoEléctrico  | Reg: Nacional             | Val: 213.16100496193027
+Scen: Medio      | Sect: TermoEléctrico  | Reg: Nacional             | Val: 214.3051547205413
+Scen: Medio      | Sect: Compresores     | Reg: Nacional             | Val: 9.791033368263106
+Scen: Medio      | Sect: Compresores     | Reg: Nacional             | Val: 11.532905485938633
+Scen: Medio      | Sect: Compresores     | Reg: Nacional             | Val: 11.014129982533836
+Scen: Medio      | Sect: Compresores     | Reg: Nacional             | Val: 11.885232276286285
+Scen: Medio      | Sect: Compresores     | Reg: Nacional             | Val: 10.423603630963918
+Scen: Medio      | Sect: Compresores     | Reg: Nacional             | Val: 10.690924344701083
+Scen: Medio      | Sect: Compresores     | Reg: Nacional             | Val: 9.531322475650654
+Scen: Medio      | Sect: Compresores     | Reg: Nacional             | Val: 10.682111056437307
+Scen: Medio      | Sect: Compresores     | Reg: Nacional             | Val: 12.441399929597772
+Scen: Medio      | Sect: Compresores     | Reg: Nacional             | Val: 11.64137188232037
+Scen: Medio      | Sect: Compresores     | Reg: Nacional             | Val: 9.89237117562467
+Scen: Medio      | Sect: Compresores     | Reg: Nacional             | Val: 10.884496737832368
+Scen: Medio      | Sect: Total           | Reg: Nacional             | Val: 1375.1152113218
+Scen: Medio      | Sect: Total           | Reg: Nacional             | Val: 1411.2107186262629
+Scen: Medio      | Sect: Total           | Reg: Nacional             | Val: 980.9300280571935
+Scen: Medio      | Sect: Total           | Reg: Nacional             | Val: 955.4785533377534
+Scen: Medio      | Sect: Total           | Reg: Nacional             | Val: 934.5778296169033
+Scen: Medio      | Sect: Total           | Reg: Nacional             | Val: 981.9450408823501
+Scen: Medio      | Sect: Total           | Reg: Nacional             | Val: 959.2036046208364
+Scen: Medio      | Sect: Total           | Reg: Nacional             | Val: 968.7013269689186
+Scen: Medio      | Sect: Total           | Reg: Nacional             | Val: 1041.3817886863699
+Scen: Medio      | Sect: Total           | Reg: Nacional             | Val: 1021.3441933601069
+Scen: Medio      | Sect: Total           | Reg: Nacional             | Val: 1039.118977262995
+Scen: Medio      | Sect: Total           | Reg: Nacional             | Val: 1049.8029100893145
+Scen: Medio      | Sect: Total Sin TermoEléctrico | Reg: Nacional             | Val: 777.8668279649413
+Scen: Medio      | Sect: Total Sin TermoEléctrico | Reg: Nacional             | Val: 813.9531606535813
+Scen: Medio      | Sect: Total Sin TermoEléctrico | Reg: Nacional             | Val: 810.2501162003566
+Scen: Medio      | Sect: Total Sin TermoEléctrico | Reg: Nacional             | Val: 802.0867606468149
+Scen: Medio      | Sect: Total Sin TermoEléctrico | Reg: Nacional             | Val: 800.3527984012852
+Scen: Medio      | Sect: Total Sin TermoEléctrico | Reg: Nacional             | Val: 819.9064386911523
+Scen: Medio      | Sect: Total Sin TermoEléctrico | Reg: Nacional             | Val: 804.5346301076512
+Scen: Medio      | Sect: Total Sin TermoEléctrico | Reg: Nacional             | Val: 817.4234256731245
+Scen: Medio      | Sect: Total Sin TermoEléctrico | Reg: Nacional             | Val: 832.5719488787042
+Scen: Medio      | Sect: Total Sin TermoEléctrico | Reg: Nacional             | Val: 820.4739765839621
+Scen: Medio      | Sect: Total Sin TermoEléctrico | Reg: Nacional             | Val: 825.9579723010647
+Scen: Medio      | Sect: Total Sin TermoEléctrico | Reg: Nacional             | Val: 835.497755368773

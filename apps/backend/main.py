@@ -14,7 +14,8 @@ app = FastAPI(title="SIMGN Backend", description="API for Natural Gas Data Integ
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origin_regex=".*",
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"], # Explicitly allow frontend
+    allow_origin_regex=".*", # Keep regex for flexibility if needed, but explicit origins are safer/better
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

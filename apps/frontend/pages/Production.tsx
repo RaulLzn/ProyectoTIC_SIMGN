@@ -2,9 +2,8 @@ import React, { useMemo, useEffect, useState } from 'react';
 import { 
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, Cell, PieChart, Pie, ComposedChart, Area 
 } from 'recharts';
-import { fetchProduction } from '../services/api';
-import { adaptProduction } from '../adapters/adapters';
-import { ProductionRecord, ProductionFilters } from '../types';
+import { fetchProductionKPIs, fetchProductionTrend, fetchProductionRanking } from '../services/api';
+import { ProductionFilters } from '../types';
 import { Factory, Flame, TrendingUp, AlertCircle, Building2 } from 'lucide-react';
 import MetricCard from '../components/MetricCard';
 import ProductionFilterBar from '../components/ProductionFilterBar';
@@ -12,7 +11,12 @@ import ProductionFilterBar from '../components/ProductionFilterBar';
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#6366f1'];
 
 const Production: React.FC = () => {
-    const [productionData, setProductionData] = useState<ProductionRecord[]>([]);
+    // Aggregated State
+    const [kpis, setKpis] = useState({ totalProduction: 0, activeFields: 0, activeOperators: 0, averageMonthly: 0 });
+    const [trendData, setTrendData] = useState<any[]>([]);
+    const [operatorRanking, setOperatorRanking] = useState<any[]>([]);
+    const [fieldRanking, setFieldRanking] = useState<any[]>([]);
+    
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [activeFilters, setActiveFilters] = useState<ProductionFilters>({});
@@ -21,12 +25,22 @@ const Production: React.FC = () => {
         const loadData = async () => {
             try {
                 setLoading(true);
-                const data = await fetchProduction(activeFilters);
-                const adaptedData = data.map(adaptProduction);
-                setProductionData(adaptedData);
-                console.log('Loaded production:', adaptedData.length, 'records');
+                // Fetch all aggregated data in parallel
+                const [kpiData, trend, topOperators, topFields] = await Promise.all([
+                    fetchProductionKPIs(activeFilters),
+                    fetchProductionTrend(activeFilters),
+                    fetchProductionRanking('operadora', activeFilters),
+                    fetchProductionRanking('campo', activeFilters)
+                ]);
+                
+                setKpis(kpiData);
+                setTrendData(trend);
+                setOperatorRanking(topOperators);
+                setFieldRanking(topFields);
+                
+                console.log('Loaded aggregated data');
             } catch (err) {
-                console.error("Error loading production:", err);
+                console.error("Error loading production data:", err);
                 setError("No se pudieron cargar los datos de producción.");
             } finally {
                 setLoading(false);
@@ -35,73 +49,8 @@ const Production: React.FC = () => {
         loadData();
     }, [activeFilters]);
 
-    const totalProduction = useMemo(() => productionData.reduce((acc, curr) => acc + curr.valor, 0), [productionData]);
-
     const numberFormatter = (value: number) => 
         new Intl.NumberFormat('es-CO').format(value);
-
-    // Time Series Data - Optimized with dynamic aggregation
-    const timeSeriesData = useMemo(() => {
-        if (productionData.length === 0) return [];
-        
-        // Calculate year range efficiently
-        let minYear = Infinity;
-        let maxYear = -Infinity;
-        
-        for (const r of productionData) {
-            const year = parseInt(r.fecha_periodo.split('-')[0]);
-            if (year < minYear) minYear = year;
-            if (year > maxYear) maxYear = year;
-        }
-        
-        const yearRange = maxYear - minYear + 1;
-        const shouldAggregateByYear = yearRange > 2;
-        
-        if (shouldAggregateByYear) {
-            // Aggregate by year
-            const yearMap: Record<string, number> = {};
-            for (const r of productionData) {
-                const year = r.fecha_periodo.split('-')[0];
-                yearMap[year] = (yearMap[year] || 0) + r.valor;
-            }
-            return Object.entries(yearMap)
-                .map(([name, value]) => ({ name, value }))
-                .sort((a, b) => a.name.localeCompare(b.name));
-        } else {
-            // Aggregate by month
-            const monthMap: Record<string, number> = {};
-            for (const r of productionData) {
-                monthMap[r.fecha_periodo] = (monthMap[r.fecha_periodo] || 0) + r.valor;
-            }
-            return Object.entries(monthMap)
-                .map(([name, value]) => ({ name, value }))
-                .sort((a, b) => a.name.localeCompare(b.name));
-        }
-    }, [productionData]);
-
-    // By Operator - Show ALL operators
-    const byOperator = useMemo(() => {
-        const map: Record<string, number> = {};
-        for (const r of productionData) {
-            const op = r.operador || 'Desconocido';
-            map[op] = (map[op] || 0) + r.valor;
-        }
-        return Object.entries(map)
-            .map(([name, value]) => ({ name, value }))
-            .sort((a, b) => b.value - a.value);
-    }, [productionData]);
-
-    // By Field - Show ALL fields
-    const byField = useMemo(() => {
-        const map: Record<string, number> = {};
-        for (const r of productionData) {
-            const field = r.campo || 'Desconocido';
-            map[field] = (map[field] || 0) + r.valor;
-        }
-        return Object.entries(map)
-            .map(([name, value]) => ({ name, value }))
-            .sort((a, b) => b.value - a.value);
-    }, [productionData]);
 
     const handleFilterChange = (filters: ProductionFilters) => {
         setActiveFilters(filters);
@@ -125,27 +74,27 @@ const Production: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <MetricCard 
                     title="Producción Total" 
-                    value={`${numberFormatter(totalProduction)} MPC`}
+                    value={`${numberFormatter(kpis.totalProduction)} MPC`}
                     icon={Flame}
                     color="orange"
                 />
                 <MetricCard 
                     title="Campos Activos" 
-                    value={new Set(productionData.map(p => p.campo)).size.toString()} 
+                    value={kpis.activeFields.toString()} 
                     trendLabel="Operando"
                     icon={Factory}
                     color="blue"
                 />
                 <MetricCard 
                     title="Operadores" 
-                    value={new Set(productionData.map(p => p.operador)).size.toString()} 
+                    value={kpis.activeOperators.toString()} 
                     trendLabel="Activos"
                     icon={Building2}
                     color="purple"
                 />
                 <MetricCard 
                     title="Promedio Mensual" 
-                    value={`${numberFormatter(timeSeriesData.length > 0 ? totalProduction / timeSeriesData.length : 0)} MPC`}
+                    value={`${numberFormatter(kpis.averageMonthly)} MPC`}
                     icon={TrendingUp}
                     color="green"
                 />
@@ -156,7 +105,7 @@ const Production: React.FC = () => {
                 <p className="text-sm text-slate-500 mb-6">Volumen mensual de gas natural</p>
                 <div className="h-80">
                     <ResponsiveContainer width="100%" height="100%">
-                        <ComposedChart data={timeSeriesData}>
+                        <ComposedChart data={trendData}>
                             <defs>
                                 <linearGradient id="colorProd" x1="0" y1="0" x2="0" y2="1">
                                     <stop offset="5%" stopColor="#f97316" stopOpacity={0.3}/>
@@ -165,11 +114,12 @@ const Production: React.FC = () => {
                             </defs>
                             <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
                             <XAxis 
-                                dataKey="name" 
+                                dataKey="year" 
                                 tick={{ fontSize: 11, fill: '#64748b' }}
                                 angle={-45}
                                 textAnchor="end"
                                 height={80}
+                                tickFormatter={(val) => val.toString()}
                             />
                             <YAxis 
                                 tick={{ fontSize: 11, fill: '#64748b' }}
@@ -178,10 +128,11 @@ const Production: React.FC = () => {
                             <Tooltip 
                                 contentStyle={{ backgroundColor: 'rgba(255,255,255,0.95)', borderRadius: '8px', border: '1px solid #e2e8f0' }}
                                 formatter={(value: any) => [numberFormatter(value) + ' MPC', 'Producción']}
+                                labelFormatter={(label) => `Año: ${label}`}
                             />
                             <Area 
                                 type="monotone" 
-                                dataKey="value" 
+                                dataKey="total" 
                                 stroke="#f97316" 
                                 strokeWidth={2}
                                 fill="url(#colorProd)"
@@ -199,7 +150,7 @@ const Production: React.FC = () => {
                     <div className="h-[500px]">
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart 
-                                data={byOperator.slice(0, 15)} 
+                                data={operatorRanking} 
                                 layout="vertical"
                                 margin={{ top: 5, right: 30, left: 150, bottom: 5 }}
                             >
@@ -220,7 +171,7 @@ const Production: React.FC = () => {
                                     formatter={(value: any) => [numberFormatter(value) + ' MPC', 'Producción']}
                                 />
                                 <Bar dataKey="value" radius={[0, 8, 8, 0]} barSize={25}>
-                                    {byOperator.slice(0, 15).map((entry, index) => (
+                                    {operatorRanking.map((entry, index) => (
                                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                     ))}
                                 </Bar>
@@ -236,7 +187,7 @@ const Production: React.FC = () => {
                     <div className="h-[500px]">
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart 
-                                data={byField.slice(0, 15)} 
+                                data={fieldRanking} 
                                 layout="vertical"
                                 margin={{ top: 5, right: 30, left: 150, bottom: 5 }}
                             >

@@ -74,6 +74,185 @@ export const fetchProduction = async (filters?: ProductionFilters): Promise<Back
     return response.json();
 };
 
+// --- Aggregation Services (Low RAM Strategy) ---
+
+export const fetchProductionKPIs = async (filters?: ProductionFilters): Promise<any> => {
+    const params = new URLSearchParams();
+    if (filters) {
+        if (filters.departamento) params.append('departamento', filters.departamento);
+        if (filters.campo) params.append('campo', filters.campo);
+        if (filters.operadora) params.append('operadora', filters.operadora);
+        if (filters.anio_min) params.append('anio_min', filters.anio_min.toString());
+        if (filters.anio_max) params.append('anio_max', filters.anio_max.toString());
+    }
+    const response = await fetch(`${API_URL}/production/kpis?${params}`);
+    if (!response.ok) throw new Error('Failed to fetch production KPIs');
+    return response.json();
+};
+
+export const fetchProductionTrend = async (filters?: ProductionFilters): Promise<any[]> => {
+    const params = new URLSearchParams();
+    if (filters) {
+        if (filters.departamento) params.append('departamento', filters.departamento);
+        if (filters.campo) params.append('campo', filters.campo);
+        if (filters.operadora) params.append('operadora', filters.operadora);
+        if (filters.anio_min) params.append('anio_min', filters.anio_min.toString());
+        if (filters.anio_max) params.append('anio_max', filters.anio_max.toString());
+    }
+    const response = await fetch(`${API_URL}/production/trend?${params}`);
+    if (!response.ok) throw new Error('Failed to fetch production trend');
+    return response.json();
+};
+
+export const fetchProductionRanking = async (type: 'operadora' | 'campo', filters?: ProductionFilters): Promise<any[]> => {
+    const params = new URLSearchParams();
+    params.append('type', type);
+    if (filters) {
+        if (filters.departamento) params.append('departamento', filters.departamento);
+        if (filters.campo) params.append('campo', filters.campo);
+        if (filters.operadora) params.append('operadora', filters.operadora);
+        if (filters.anio_min) params.append('anio_min', filters.anio_min.toString());
+        if (filters.anio_max) params.append('anio_max', filters.anio_max.toString());
+    }
+    const response = await fetch(`${API_URL}/production/ranking?${params}`);
+    if (!response.ok) throw new Error('Failed to fetch production ranking');
+    return response.json();
+};
+
+export const fetchProductionMap = async (filters?: ProductionFilters): Promise<any[]> => {
+    const params = new URLSearchParams();
+    if (filters) {
+        if (filters.departamento) params.append('departamento', filters.departamento);
+        if (filters.campo) params.append('campo', filters.campo);
+        if (filters.operadora) params.append('operadora', filters.operadora);
+        if (filters.anio_min) params.append('anio_min', filters.anio_min.toString());
+        if (filters.anio_max) params.append('anio_max', filters.anio_max.toString());
+    }
+    const response = await fetch(`${API_URL}/production/map?${params}`);
+    if (!response.ok) throw new Error('Failed to fetch production map');
+    return response.json();
+};
+
+export const fetchRoyaltiesKPIs = async (filters?: RoyaltiesFilters): Promise<any> => {
+    const params = new URLSearchParams();
+    if (filters) {
+        if (filters.departamento) params.append('departamento', filters.departamento);
+        if (filters.campo) params.append('campo', filters.campo);
+        if (filters.anio_min) params.append('anio_min', filters.anio_min.toString());
+        if (filters.anio_max) params.append('anio_max', filters.anio_max.toString());
+        if (filters.tipo_hidrocarburo) params.append('tipo_hidrocarburo', filters.tipo_hidrocarburo);
+    }
+    const response = await fetch(`${API_URL}/royalties/kpis?${params}`);
+    if (!response.ok) throw new Error('Failed to fetch royalties KPIs');
+    return response.json();
+};
+
+export const fetchRoyaltiesTrend = async (filters?: RoyaltiesFilters): Promise<any[]> => {
+    const params = new URLSearchParams();
+    if (filters) {
+        if (filters.departamento) params.append('departamento', filters.departamento);
+        if (filters.campo) params.append('campo', filters.campo);
+        if (filters.anio_min) params.append('anio_min', filters.anio_min.toString());
+        if (filters.anio_max) params.append('anio_max', filters.anio_max.toString());
+        if (filters.tipo_hidrocarburo) params.append('tipo_hidrocarburo', filters.tipo_hidrocarburo);
+    }
+    const response = await fetch(`${API_URL}/royalties/trend?${params}`);
+    if (!response.ok) throw new Error('Failed to fetch royalties trend');
+    return response.json();
+};
+
+export const fetchRoyaltiesMap = async (filters?: RoyaltiesFilters): Promise<any[]> => {
+    const params = new URLSearchParams();
+    if (filters) {
+        if (filters.departamento) params.append('departamento', filters.departamento);
+        if (filters.campo) params.append('campo', filters.campo);
+        if (filters.anio_min) params.append('anio_min', filters.anio_min.toString());
+        if (filters.anio_max) params.append('anio_max', filters.anio_max.toString());
+        if (filters.tipo_hidrocarburo) params.append('tipo_hidrocarburo', filters.tipo_hidrocarburo);
+    }
+    const response = await fetch(`${API_URL}/royalties/map?${params}`);
+    if (!response.ok) throw new Error('Failed to fetch royalties map');
+    return response.json();
+};
+
+export const fetchRoyaltiesDistribution = async (filters?: RoyaltiesFilters): Promise<any[]> => {
+    const params = new URLSearchParams();
+    if (filters) {
+        if (filters.departamento) params.append('departamento', filters.departamento);
+        if (filters.campo) params.append('campo', filters.campo);
+        if (filters.anio_min) params.append('anio_min', filters.anio_min.toString());
+        if (filters.anio_max) params.append('anio_max', filters.anio_max.toString());
+        if (filters.tipo_hidrocarburo) params.append('tipo_hidrocarburo', filters.tipo_hidrocarburo);
+    }
+    const response = await fetch(`${API_URL}/royalties/distribution?${params}`);
+    if (!response.ok) throw new Error('Failed to fetch royalties distribution');
+    return response.json();
+};
+
+export const fetchRoyaltiesRanking = async (filters?: RoyaltiesFilters): Promise<any[]> => {
+    const params = new URLSearchParams();
+    if (filters) {
+        if (filters.departamento) params.append('departamento', filters.departamento);
+        if (filters.campo) params.append('campo', filters.campo);
+        if (filters.anio_min) params.append('anio_min', filters.anio_min.toString());
+        if (filters.anio_max) params.append('anio_max', filters.anio_max.toString());
+        if (filters.tipo_hidrocarburo) params.append('tipo_hidrocarburo', filters.tipo_hidrocarburo);
+    }
+    const response = await fetch(`${API_URL}/royalties/ranking?${params}`);
+    if (!response.ok) throw new Error('Failed to fetch royalties ranking');
+    return response.json();
+};
+
+// --- Demand Aggregation ---
+
+export const fetchDemandKPIs = async (): Promise<{ totalReal: number, totalProjected: number, deviation: number }> => {
+    const response = await fetch(`${API_URL}/demand/kpis`);
+    if (!response.ok) throw new Error('Failed to fetch demand KPIs');
+    return response.json();
+};
+
+export const fetchDemandTrend = async (): Promise<{ name: string, real: number, projected: number }[]> => {
+    const response = await fetch(`${API_URL}/demand/trend`);
+    if (!response.ok) throw new Error('Failed to fetch demand trend');
+    return response.json();
+};
+
+export const fetchDemandSector = async (): Promise<{ name: string, value: number }[]> => {
+    const response = await fetch(`${API_URL}/demand/sector`);
+    if (!response.ok) throw new Error('Failed to fetch demand by sector');
+    return response.json();
+};
+
+export const fetchDemandRegion = async (): Promise<{ name: string, value: number }[]> => {
+    const response = await fetch(`${API_URL}/demand/region`);
+    if (!response.ok) throw new Error('Failed to fetch demand by region');
+    return response.json();
+};
+
+export const fetchDemandScenarios = async () => {
+    const response = await fetch(`${API_URL}/demand/scenarios`);
+    if (!response.ok) throw new Error('Failed to fetch demand scenarios');
+    return response.json();
+};
+
+export const fetchDemandSectors = async () => {
+    const response = await fetch(`${API_URL}/demand/sectors`);
+    if (!response.ok) throw new Error('Failed to fetch demand sectors');
+    return response.json();
+};
+
+export const fetchDemandMap = async () => {
+    const response = await fetch(`${API_URL}/demand/map`);
+    if (!response.ok) throw new Error('Failed to fetch demand map');
+    return response.json();
+};
+
+export const fetchDemandBalance = async () => {
+    const response = await fetch(`${API_URL}/demand/balance`);
+    if (!response.ok) throw new Error('Failed to fetch demand balance');
+    return response.json();
+};
+
 export const fetchProductionFilters = async (): Promise<ProductionFilterOptions> => {
     const response = await fetch(`${API_URL}/production/filters`);
     if (!response.ok) {

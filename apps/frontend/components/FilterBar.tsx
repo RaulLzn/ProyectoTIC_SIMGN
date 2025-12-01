@@ -110,7 +110,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
                                     className="bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2.5 outline-none transition-all hover:border-slate-300 cursor-pointer"
                                 >
                                     <option value="">Año desde</option>
-                                    {filterOptions.anios.map(year => (
+                                    {filterOptions?.anios?.map(year => (
                                         <option key={year} value={year}>{year}</option>
                                     ))}
                                 </select>
@@ -125,7 +125,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
                                     className="bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2.5 outline-none transition-all hover:border-slate-300 cursor-pointer"
                                 >
                                     <option value="">Año hasta</option>
-                                    {filterOptions.anios.map(year => (
+                                    {filterOptions?.anios?.map(year => (
                                         <option key={year} value={year}>{year}</option>
                                     ))}
                                 </select>
@@ -145,7 +145,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
                                 className="bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2.5 outline-none cursor-pointer hover:border-slate-300"
                             >
                                 <option value="">Todos los Departamentos</option>
-                                {filterOptions.departamentos.map(dept => (
+                                {filterOptions?.departamentos?.map(dept => (
                                     <option key={dept} value={dept}>{dept}</option>
                                 ))}
                             </select>
@@ -164,7 +164,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
                                 className="bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2.5 outline-none cursor-pointer hover:border-slate-300"
                             >
                                 <option value="">Todos los Campos</option>
-                                {filterOptions.campos.slice(0, 50).map(campo => (
+                                {filterOptions?.campos?.slice(0, 50).map(campo => (
                                     <option key={campo} value={campo}>{campo}</option>
                                 ))}
                             </select>
@@ -183,7 +183,7 @@ const FilterBar: React.FC<FilterBarProps> = ({
                                 className="bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2.5 outline-none cursor-pointer hover:border-slate-300"
                             >
                                 <option value="">Todos los Tipos</option>
-                                {filterOptions.tipos_hidrocarburo.map(tipo => (
+                                {filterOptions?.tipos_hidrocarburo?.map(tipo => (
                                     <option key={tipo} value={tipo}>
                                         {getTipoHidrocarburoLabel(tipo)}
                                     </option>

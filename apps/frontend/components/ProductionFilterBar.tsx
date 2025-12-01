@@ -81,7 +81,7 @@ const ProductionFilterBar: React.FC<ProductionFilterBarProps> = ({ activeFilters
                         disabled={loading}
                     >
                         <option value="">Todos</option>
-                        {filterOptions?.anios.map(year => (
+                        {filterOptions?.anios?.map(year => (
                             <option key={year} value={year}>{year}</option>
                         ))}
                     </select>
@@ -100,7 +100,7 @@ const ProductionFilterBar: React.FC<ProductionFilterBarProps> = ({ activeFilters
                         disabled={loading}
                     >
                         <option value="">Todos</option>
-                        {filterOptions?.anios.map(year => (
+                        {filterOptions?.anios?.map(year => (
                             <option key={year} value={year}>{year}</option>
                         ))}
                     </select>
@@ -119,7 +119,7 @@ const ProductionFilterBar: React.FC<ProductionFilterBarProps> = ({ activeFilters
                         disabled={loading}
                     >
                         <option value="">Todos los Departamentos</option>
-                        {filterOptions?.departamentos.map(dept => (
+                        {filterOptions?.departamentos?.map(dept => (
                             <option key={dept} value={dept}>{dept}</option>
                         ))}
                     </select>
@@ -138,7 +138,7 @@ const ProductionFilterBar: React.FC<ProductionFilterBarProps> = ({ activeFilters
                         disabled={loading}
                     >
                         <option value="">Todos los Campos</option>
-                        {filterOptions?.campos.map(campo => (
+                        {filterOptions?.campos?.map(campo => (
                             <option key={campo} value={campo}>{campo}</option>
                         ))}
                     </select>
@@ -157,7 +157,7 @@ const ProductionFilterBar: React.FC<ProductionFilterBarProps> = ({ activeFilters
                         disabled={loading}
                     >
                         <option value="">Todas las Operadoras</option>
-                        {filterOptions?.operadoras.map(op => (
+                        {filterOptions?.operadoras?.map(op => (
                             <option key={op} value={op}>{op}</option>
                         ))}
                     </select>

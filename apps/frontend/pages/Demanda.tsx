@@ -1,26 +1,72 @@
-import React, { useMemo, useEffect, useState } from 'react';
+import React, { useMemo, useEffect, useState, useCallback } from 'react';
 import { 
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, Legend, AreaChart, Area, ComposedChart, Cell, ReferenceLine 
 } from 'recharts';
-import { fetchDemand } from '../services/api';
-import { adaptDemand } from '../adapters/adapters';
-import { DemandRecord } from '../types';
-import { Users, Zap, BarChart3, AlertCircle, TrendingUp, AlertTriangle } from 'lucide-react';
+import { fetchDemandScenarios, fetchDemandSectors, fetchDemandMap, fetchDemandBalance } from '../services/api';
+import { Users, Zap, BarChart3, AlertCircle, TrendingUp, AlertTriangle, Map as MapIcon } from 'lucide-react';
 import MetricCard from '../components/MetricCard';
 import FilterBar from '../components/FilterBar';
+import ColombiaMap from '../components/ColombiaMap';
+import { MapData } from '../types';
 
 const Demanda: React.FC = () => {
-    const [demandData, setDemandData] = useState<DemandRecord[]>([]);
+    // State
+    const [scenariosData, setScenariosData] = useState<any[]>([]);
+    const [sectorsData, setSectorsData] = useState<any[]>([]);
+    const [mapData, setMapData] = useState<MapData[]>([]);
+    const [balanceData, setBalanceData] = useState<any[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
+
+    // Helper to map Regions to Departments for the Map Component
+    const mapRegionToDepartments = useCallback((regionData: any[]) => {
+        const mapping: Record<string, string[]> = {
+            'Costa Atlántica': ['La Guajira', 'Magdalena', 'Atlántico', 'Cesar', 'Bolívar', 'Sucre', 'Córdoba'],
+            'Centro': ['Bogotá D.C.', 'Cundinamarca', 'Boyacá', 'Meta'],
+            'NorOccidente': ['Antioquia', 'Chocó'],
+            'SurOccidente': ['Valle del Cauca', 'Cauca', 'Nariño'],
+            'NorOriente': ['Santander', 'Norte de Santander', 'Arauca'],
+            'Tolima-Huila': ['Tolima', 'Huila'],
+            'CQR': ['Casanare'],
+            'Magdalena Medio': ['Santander'], // Simplified mapping
+        };
+
+        const deptData: MapData[] = [];
+        regionData.forEach(r => {
+            const depts = mapping[r.region] || [];
+            depts.forEach(d => {
+                // Avoid duplicates if regions overlap (simple approach: last wins)
+                if (!deptData.find(x => x.departmentName === d)) {
+                    deptData.push({ 
+                        departmentId: d,
+                        departmentName: d, 
+                        value: r.value, 
+                        formattedValue: `${Math.round(r.value)} GBTUD`,
+                        metricLabel: 'Demanda (GBTUD)' 
+                    });
+                }
+            });
+        });
+        return deptData;
+    }, []);
 
     useEffect(() => {
         const loadData = async () => {
             try {
-                const data = await fetchDemand();
-                const adaptedData = data.map(adaptDemand);
-                console.log('Demand Data Sample:', adaptedData[0]);
-                setDemandData(adaptedData);
+                setLoading(true);
+                const [scenarios, sectors, map, balance] = await Promise.all([
+                    fetchDemandScenarios(),
+                    fetchDemandSectors(),
+                    fetchDemandMap(),
+                    fetchDemandBalance()
+                ]);
+                
+                setScenariosData(scenarios);
+                setSectorsData(sectors);
+                setMapData(mapRegionToDepartments(map));
+                setBalanceData(balance);
+                
+                console.log('Loaded new demand data');
             } catch (err) {
                 console.error("Error loading demand:", err);
                 setError("No se pudieron cargar los datos de demanda.");
@@ -29,70 +75,38 @@ const Demanda: React.FC = () => {
             }
         };
         loadData();
-    }, []);
+    }, [mapRegionToDepartments]);
 
-    const totalDemand = useMemo(() => demandData.reduce((acc, curr) => acc + curr.valor_real, 0), [demandData]);
-
-    const numberFormatter = (value: number) => 
-        new Intl.NumberFormat('es-CO').format(value);
-
-    // Time Series Data
-    const timeSeriesData = useMemo(() => {
-        const map = new Map<string, { name: string, real: number | null, projected: number | null }>();
-        demandData.forEach(r => {
-            const current = map.get(r.fecha_periodo) || { name: r.fecha_periodo, real: 0, projected: 0 };
-            // We use non-null assertion or check because we initialized with 0
-            const currentReal = current.real || 0;
-            const currentProj = current.projected || 0;
-            
-            map.set(r.fecha_periodo, {
-                name: r.fecha_periodo,
-                real: currentReal + r.valor_real,
-                projected: currentProj + r.valor_proyectado
-            });
-        });
+    // Calculate KPIs
+    const kpis = useMemo(() => {
+        if (!scenariosData.length) return { totalReal: 0, totalProjected: 0, deviation: 0 };
         
-        // Convert 0 to null to avoid lines dropping to zero in the chart
-        return Array.from(map.values()).map(item => ({
-            ...item,
-            real: item.real === 0 ? null : item.real,
-            projected: item.projected === 0 ? null : item.projected
-        })).sort((a,b) => a.name.localeCompare(b.name));
-    }, [demandData]);
+        // Assuming 'Histórico' is available in scenariosData for past years
+        // Or we use the last available year for "Current Demand"
+        const lastYearData = scenariosData[scenariosData.length - 1]; // This might be 2038
+        // We need current year data (e.g., 2024 or 2023)
+        const currentYear = new Date().getFullYear();
+        const currentData = scenariosData.find(d => d.year === currentYear) || scenariosData[0];
+        
+        const real = currentData?.['Histórico'] || currentData?.['Medio'] || 0; // Fallback to Medio if no Historic
+        const projected = currentData?.['Medio'] || 0;
+        const deviation = projected > 0 ? ((real - projected) / projected) * 100 : 0;
 
-    // Seasonality Data (Simulated for RF-09 "Estacionalidad")
-    const seasonalityData = useMemo(() => {
-        return [
-            { month: 'Ene', factor: 0.95 }, { month: 'Feb', factor: 0.98 },
-            { month: 'Mar', factor: 1.02 }, { month: 'Abr', factor: 1.05 },
-            { month: 'May', factor: 1.00 }, { month: 'Jun', factor: 0.98 },
-            { month: 'Jul', factor: 0.96 }, { month: 'Ago', factor: 1.01 },
-            { month: 'Sep', factor: 1.03 }, { month: 'Oct', factor: 1.08 },
-            { month: 'Nov', factor: 1.10 }, { month: 'Dic', factor: 0.90 },
-        ];
-    }, []);
+        return {
+            totalReal: real,
+            totalProjected: projected,
+            deviation: deviation
+        };
+    }, [scenariosData]);
 
-    // By Sector
-    const bySector = useMemo(() => {
-        const map = new Map<string, number>();
-        demandData.forEach(r => {
-            map.set(r.sector, (map.get(r.sector) || 0) + r.valor_real);
-        });
-        return Array.from(map).map(([name, value]) => ({ name, value })).sort((a,b) => b.value - a.value);
-    }, [demandData]);
+    // Calculate current balance deficit (for alert)
+    const currentYear = new Date().getFullYear();
+    const currentBalance = balanceData.find(d => d.year === currentYear + 1) || balanceData[0]; // Look ahead
+    const hasDeficit = currentBalance && currentBalance.deficit > 0;
 
-    // By Region
-    const byRegion = useMemo(() => {
-        const map = new Map<string, number>();
-        demandData.forEach(r => {
-            map.set(r.region, (map.get(r.region) || 0) + r.valor_real);
-        });
-        return Array.from(map).map(([name, value]) => ({ name, value })).sort((a,b) => b.value - a.value);
-    }, [demandData]);
-
-    const totalReal = Math.round(timeSeriesData.reduce((acc, curr) => acc + (curr.real || 0), 0));
-    const totalProj = Math.round(timeSeriesData.reduce((acc, curr) => acc + (curr.projected || 0), 0));
-    const deviation = totalProj > 0 ? ((totalReal - totalProj) / totalProj) * 100 : 0;
+    // Stable props
+    const emptyFilters = useMemo(() => ({}), []);
+    const mapValueFormatter = useCallback((val: number) => `${Math.round(val)} GBTUD`, []);
 
     if (loading) return <div className="p-8 text-center text-slate-500">Cargando datos de demanda...</div>;
     if (error) return (
@@ -104,114 +118,122 @@ const Demanda: React.FC = () => {
 
     return (
         <div className="space-y-6">
-            <FilterBar showFieldFilter={false} showRegionFilter={true} />
+            <FilterBar 
+                showFieldFilter={false} 
+                showRegionFilter={true} 
+                activeFilters={emptyFilters}
+            />
 
+            {/* KPIs */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <MetricCard 
-                    title="Demanda Real Acumulada" 
-                    value={`${totalReal.toLocaleString()} GBTUD`}
+                    title={`Demanda ${currentYear} (Est.)`}
+                    value={`${Math.round(kpis.totalReal).toLocaleString()} GBTUD`}
                     trend={1.5}
                     icon={TrendingUp}
                     color="blue"
                 />
                  <MetricCard 
-                    title="Proyección UPME" 
-                    value={`${totalProj.toLocaleString()} GBTUD`}
+                    title="Proyección UPME (Medio)" 
+                    value={`${Math.round(kpis.totalProjected).toLocaleString()} GBTUD`}
                     trend={0}
                     trendLabel="Meta anual"
-                    icon={TrendingUp}
+                    icon={Zap}
                     color="purple"
                 />
                 <MetricCard 
-                    title="Desviación vs Proyección" 
-                    value={`${deviation > 0 ? '+' : ''}${deviation.toFixed(1)}%`}
-                    trend={deviation}
-                    trendLabel="Diferencia Porcentual"
+                    title="Desviación" 
+                    value={`${kpis.deviation > 0 ? '+' : ''}${kpis.deviation.toFixed(1)}%`}
+                    trend={kpis.deviation}
+                    trendLabel="vs Proyección"
                     icon={AlertTriangle}
-                    color={Math.abs(deviation) > 5 ? 'orange' : 'green'}
+                    color={Math.abs(kpis.deviation) > 5 ? 'orange' : 'green'}
                 />
             </div>
 
+            {/* Supply-Demand Balance Alert */}
+            {hasDeficit && (
+                <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-4 animate-pulse">
+                    <div className="bg-red-100 p-2 rounded-full">
+                        <AlertTriangle className="w-6 h-6 text-red-600" />
+                    </div>
+                    <div>
+                        <h3 className="font-bold text-red-800 text-lg">Alerta de Déficit Proyectado ({currentBalance.year})</h3>
+                        <p className="text-red-700">
+                            La demanda proyectada (Escenario Alto) supera la producción disponible en 
+                            <span className="font-bold"> {Math.round(currentBalance.deficit)} GBTUD</span>.
+                            Se requiere gestión inmediata de oferta.
+                        </p>
+                    </div>
+                </div>
+            )}
+
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Proyección vs Realidad - RF-09 */}
+                {/* Real vs Projected Chart */}
                 <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
-                    <h3 className="text-lg font-bold text-slate-800 mb-2">Proyección vs Demanda Real</h3>
-                    <p className="text-sm text-slate-500 mb-6">Comparativa de cumplimiento de metas UPME</p>
+                    <div className="flex items-center gap-2 mb-2">
+                        <h3 className="text-lg font-bold text-slate-800">Proyección de Demanda (Escenarios)</h3>
+                        <span className="bg-blue-100 text-blue-700 text-xs px-2 py-0.5 rounded-full font-medium">UPME 2024-2038</span>
+                    </div>
+                    <p className="text-sm text-slate-500 mb-6">Comparativa Histórico vs Escenarios (Bajo, Medio, Alto)</p>
                     <div className="h-80">
                         <ResponsiveContainer width="100%" height="100%">
-                            <ComposedChart data={timeSeriesData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+                            <LineChart data={scenariosData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                                <XAxis dataKey="name" fontSize={12} tickLine={false} axisLine={false} />
-                                <YAxis fontSize={12} tickLine={false} axisLine={false} />
-                                <Tooltip 
-                                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                                />
+                                <XAxis dataKey="year" fontSize={12} tickLine={false} axisLine={false} />
+                                <YAxis fontSize={12} tickLine={false} axisLine={false} label={{ value: 'GBTUD', angle: -90, position: 'insideLeft' }} />
+                                <Tooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
                                 <Legend wrapperStyle={{ paddingTop: '10px' }} />
-                                <Area type="monotone" dataKey="real" name="Demanda Real" fill="#3b82f6" fillOpacity={0.1} stroke="#3b82f6" strokeWidth={3} />
-                                <Line type="monotone" dataKey="projected" name="Proyección UPME" stroke="#f97316" strokeDasharray="4 4" strokeWidth={2} dot={false} />
-                            </ComposedChart>
+                                <Line type="monotone" dataKey="Bajo" stroke="#10b981" strokeWidth={2} dot={false} />
+                                <Line type="monotone" dataKey="Medio" stroke="#3b82f6" strokeWidth={3} dot={false} />
+                                <Line type="monotone" dataKey="Alto" stroke="#ef4444" strokeWidth={2} dot={false} />
+                                <Line type="monotone" dataKey="Histórico" stroke="#64748b" strokeWidth={2} strokeDasharray="5 5" dot={false} />
+                            </LineChart>
                         </ResponsiveContainer>
                     </div>
                 </div>
 
-                {/* Estacionalidad de la Demanda - RF-09 */}
+                {/* Sectoral Trends */}
                 <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
-                    <div className="flex items-center gap-2 mb-2">
-                        <h3 className="text-lg font-bold text-slate-800">Estacionalidad de la Demanda</h3>
-                        <span className="bg-indigo-100 text-indigo-700 text-xs px-2 py-0.5 rounded-full font-medium">Análisis IA</span>
-                    </div>
-                    <p className="text-sm text-slate-500 mb-6">Factores de consumo mensual promedio</p>
+                    <h3 className="text-lg font-bold text-slate-800 mb-2">Tendencia por Sector (Esc. Medio)</h3>
+                    <p className="text-sm text-slate-500 mb-6">Evolución del consumo por tipo de usuario</p>
                     <div className="h-80">
                         <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={seasonalityData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+                            <AreaChart data={sectorsData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                                <XAxis dataKey="month" fontSize={12} tickLine={false} axisLine={false} />
-                                <YAxis fontSize={12} tickLine={false} axisLine={false} domain={[0.8, 1.2]} />
-                                <Tooltip 
-                                    cursor={{fill: '#f8fafc'}}
-                                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                                />
-                                <Bar dataKey="factor" name="Factor Estacional" fill="#6366f1" radius={[4, 4, 0, 0]}>
-                                    {seasonalityData.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={entry.factor > 1.05 ? '#f59e0b' : '#6366f1'} />
-                                    ))}
-                                </Bar>
-                                <ReferenceLine y={1} stroke="#94a3b8" strokeDasharray="3 3" />
-                            </BarChart>
+                                <XAxis dataKey="year" fontSize={12} tickLine={false} axisLine={false} />
+                                <YAxis fontSize={12} tickLine={false} axisLine={false} />
+                                <Tooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
+                                <Legend />
+                                <Area type="monotone" dataKey="TermoEléctrico" stackId="1" stroke="#f59e0b" fill="#f59e0b" />
+                                <Area type="monotone" dataKey="Industrial" stackId="1" stroke="#3b82f6" fill="#3b82f6" />
+                                <Area type="monotone" dataKey="Residencial" stackId="1" stroke="#10b981" fill="#10b981" />
+                                <Area type="monotone" dataKey="GNC Transporte" stackId="1" stroke="#8b5cf6" fill="#8b5cf6" />
+                                <Area type="monotone" dataKey="Petroquímica" stackId="1" stroke="#ec4899" fill="#ec4899" />
+                                <Area type="monotone" dataKey="Refinería" stackId="1" stroke="#64748b" fill="#64748b" />
+                            </AreaChart>
                         </ResponsiveContainer>
                     </div>
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
-                    <h3 className="text-lg font-bold text-slate-800 mb-6">Demanda por Sector</h3>
-                    <div className="h-80">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={bySector} layout="vertical" margin={{ left: 40 }}>
-                                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
-                                <XAxis type="number" hide />
-                                <YAxis dataKey="name" type="category" width={100} tick={{fontSize: 12, fill: '#64748b'}} axisLine={false} tickLine={false} />
-                                <Tooltip cursor={{fill: '#f8fafc'}} contentStyle={{ borderRadius: '8px', border: 'none' }} />
-                                <Bar dataKey="value" fill="#3b82f6" radius={[0, 4, 4, 0]} barSize={20} />
-                            </BarChart>
-                        </ResponsiveContainer>
+            {/* Regional Map */}
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 h-[600px]">
+                <div className="flex items-center justify-between mb-6">
+                    <div>
+                        <h3 className="text-lg font-bold text-slate-800">Mapa de Demanda Regional</h3>
+                        <p className="text-sm text-slate-500">Intensidad de consumo promedio (2024-2038)</p>
+                    </div>
+                    <div className="bg-orange-50 p-2 rounded-lg">
+                        <MapIcon className="w-6 h-6 text-orange-600" />
                     </div>
                 </div>
-
-                <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
-                    <h3 className="text-lg font-bold text-slate-800 mb-6">Demanda por Región</h3>
-                    <div className="h-80">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={byRegion} layout="vertical" margin={{ left: 40 }}>
-                                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
-                                <XAxis type="number" hide />
-                                <YAxis dataKey="name" type="category" width={100} tick={{fontSize: 12, fill: '#64748b'}} axisLine={false} tickLine={false} />
-                                <Tooltip cursor={{fill: '#f8fafc'}} contentStyle={{ borderRadius: '8px', border: 'none' }} />
-                                <Bar dataKey="value" fill="#10b981" radius={[0, 4, 4, 0]} barSize={20} />
-                            </BarChart>
-                        </ResponsiveContainer>
-                    </div>
+                <div className="h-[500px] w-full">
+                    <ColombiaMap 
+                        data={mapData} 
+                        valueFormatter={mapValueFormatter}
+                        colorScale="orange"
+                    />
                 </div>
             </div>
         </div>

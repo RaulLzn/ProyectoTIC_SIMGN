@@ -5,9 +5,8 @@ import {
 } from 'lucide-react';
 import ColombiaMap from '../components/ColombiaMap';
 import DetailedReportModal from '../components/DetailedReportModal';
-import { fetchProduction, fetchDemand, fetchRoyalties } from '../services/api';
-import { adaptProduction, adaptDemand, adaptRoyalty } from '../adapters/adapters';
-import { MapData, ProductionRecord, DemandRecord, RoyaltyRecord } from '../types';
+import { fetchProductionMap, fetchDemandRegion, fetchRoyaltiesMap } from '../services/api';
+import { MapData } from '../types';
 
 type LayerType = 'production' | 'demand' | 'royalties';
 
@@ -18,9 +17,9 @@ const GeographicAnalysis: React.FC = () => {
     const [position, setPosition] = useState({ x: 0, y: 0 });
     const [isModalOpen, setIsModalOpen] = useState(false);
 
-    const [productionData, setProductionData] = useState<ProductionRecord[]>([]);
-    const [demandData, setDemandData] = useState<DemandRecord[]>([]);
-    const [royaltiesData, setRoyaltiesData] = useState<RoyaltyRecord[]>([]);
+    const [productionMapData, setProductionMapData] = useState<MapData[]>([]);
+    const [demandMapData, setDemandMapData] = useState<MapData[]>([]);
+    const [royaltiesMapData, setRoyaltiesMapData] = useState<MapData[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -28,14 +27,35 @@ const GeographicAnalysis: React.FC = () => {
         const loadAllData = async () => {
             try {
                 const [prod, dem, roy] = await Promise.all([
-                    fetchProduction(),
-                    fetchDemand(),
-                    fetchRoyalties()
+                    fetchProductionMap(),
+                    fetchDemandRegion(),
+                    fetchRoyaltiesMap()
                 ]);
 
-                setProductionData(prod.map(adaptProduction));
-                setDemandData(dem.map(adaptDemand));
-                setRoyaltiesData(roy.map(adaptRoyalty));
+                setProductionMapData(prod.map((p: any) => ({
+                    departmentId: p.department,
+                    departmentName: p.department,
+                    value: p.value,
+                    formattedValue: `${(p.value / 1000).toFixed(1)}k`,
+                    metricLabel: 'Producción Total (mpc)'
+                })));
+
+                setDemandMapData(dem.map((d: any) => ({
+                    departmentId: d.name,
+                    departmentName: d.name,
+                    value: d.value,
+                    formattedValue: `${d.value.toLocaleString()} GBTUD`,
+                    metricLabel: 'Demanda Real'
+                })));
+
+                setRoyaltiesMapData(roy.map((r: any) => ({
+                    departmentId: r.department,
+                    departmentName: r.department,
+                    value: r.value,
+                    formattedValue: new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', notation: "compact" }).format(r.value),
+                    metricLabel: 'Regalías Liquidadas'
+                })));
+
             } catch (err) {
                 console.error("Error loading geographic data:", err);
                 setError("Error al cargar los datos geográficos.");
@@ -48,50 +68,7 @@ const GeographicAnalysis: React.FC = () => {
 
     // --- Data Processing Logic ---
 
-    // 1. Production Data
-    const productionMapData: MapData[] = useMemo(() => {
-        const map = new Map<string, number>();
-        productionData.forEach(p => {
-            if (p.entidad_territorial) map.set(p.entidad_territorial, (map.get(p.entidad_territorial) || 0) + p.valor);
-        });
-        return Array.from(map).map(([name, value]) => ({
-            departmentId: name,
-            departmentName: name,
-            value,
-            formattedValue: `${(value / 1000).toFixed(1)}k`,
-            metricLabel: 'Producción Total (mpc)'
-        }));
-    }, [productionData]);
 
-    // 2. Demand Data
-    const demandMapData: MapData[] = useMemo(() => {
-        const map = new Map<string, number>();
-        demandData.forEach(p => {
-            if (p.entidad_territorial) map.set(p.entidad_territorial, (map.get(p.entidad_territorial) || 0) + p.valor_real);
-        });
-        return Array.from(map).map(([name, value]) => ({
-            departmentId: name,
-            departmentName: name,
-            value,
-            formattedValue: `${value.toLocaleString()} GBTUD`,
-            metricLabel: 'Demanda Real'
-        }));
-    }, [demandData]);
-
-    // 3. Royalties Data
-    const royaltiesMapData: MapData[] = useMemo(() => {
-        const map = new Map<string, number>();
-        royaltiesData.forEach(p => {
-            if (p.entidad_territorial) map.set(p.entidad_territorial, (map.get(p.entidad_territorial) || 0) + p.valor);
-        });
-        return Array.from(map).map(([name, value]) => ({
-            departmentId: name,
-            departmentName: name,
-            value,
-            formattedValue: new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', notation: "compact" }).format(value),
-            metricLabel: 'Regalías Liquidadas'
-        }));
-    }, [royaltiesData]);
 
     // Select Data based on Active Layer
     const currentData = activeLayer === 'production' ? productionMapData 
@@ -120,12 +97,11 @@ const GeographicAnalysis: React.FC = () => {
         const dem = demandMapData.find(d => d.departmentName === selectedDept)?.value || 0;
         const roy = royaltiesMapData.find(d => d.departmentName === selectedDept)?.value || 0;
         
-        // Find top field for this department if production exists
-        const fields = productionData.filter(p => p.entidad_territorial === selectedDept);
-        const topField = fields.length > 0 ? fields.sort((a,b) => b.valor - a.valor)[0].campo : 'N/A';
+        // Top field logic removed for optimization (requires extra fetch)
+        const topField = 'N/A'; 
 
         return { prod, dem, roy, topField };
-    }, [selectedDept, productionMapData, demandMapData, royaltiesMapData, productionData]);
+    }, [selectedDept, productionMapData, demandMapData, royaltiesMapData]);
 
     const currencyFormatter = (val: number) => new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', notation: "compact" }).format(val);
 
@@ -284,9 +260,9 @@ const GeographicAnalysis: React.FC = () => {
                     isOpen={isModalOpen}
                     onClose={() => setIsModalOpen(false)}
                     selectedDepartment={selectedDept}
-                    productionData={productionData}
-                    demandData={demandData}
-                    royaltiesData={royaltiesData}
+                    productionData={[]} // Disabled for now
+                    demandData={[]} // Disabled for now
+                    royaltiesData={[]} // Disabled for now
                 />
             )}
         </div>

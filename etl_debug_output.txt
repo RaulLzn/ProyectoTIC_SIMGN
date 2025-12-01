@@ -1,0 +1,36 @@
+/usr/lib/python3.14/site-packages/urllib3/connectionpool.py:1097: InsecureRequestWarning: Unverified HTTPS request is being made to host 'www1.upme.gov.co'. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/latest/advanced-usage.html#tls-warnings
+  warnings.warn(
+/usr/lib/python3.14/site-packages/urllib3/connectionpool.py:1097: InsecureRequestWarning: Unverified HTTPS request is being made to host 'docs.upme.gov.co'. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/latest/advanced-usage.html#tls-warnings
+  warnings.warn(
+
+======================================================================
+  🚀 ETL DE DEMANDA (REDEFINIDO)
+======================================================================
+🔍 Buscando URL de archivo de Demanda en UPME...
+   ⚠️ Usando URL de respaldo: https://docs.upme.gov.co/DemandayEficiencia/Documents/Anexo_Datos_Proyeccion_Demanda_Gas_Nat_2024.zip
+📥 Descargando datos de Demanda desde https://docs.upme.gov.co/DemandayEficiencia/Documents/Anexo_Datos_Proyeccion_Demanda_Gas_Nat_2024.zip...
+   📄 Procesando archivo principal: Series Históricas y de Proyección de Demanda de Gas Natural Agregada.xlsx
+     - Procesando Escenarios: Esc Alto, Medio y Bajo
+     - Procesando Regional: Esc Med Regional
+     - Procesando Sectorial: Esc Med Sectorial
+💾 Cargando 8,454 registros de Demanda...
+   🗑️  Eliminados 8062 registros antiguos
+   ... lote 1 cargado
+   ... lote 2 cargado
+   ✅ Carga completada exitosamente
+======================================================================
+
+--- Demand Data Debug ---
+Total records: 8454
+
+Distinct Scenarios:
+['Bajo', 'Medio', 'Alto']
+
+Distinct Sectors:
+['Agregado', 'Compresores', 'Industrial', 'Petrolero', 'Petroquímico', 'Residencial', 'Terciario', 'TermoEléctrico', 'Total', 'Total Sin TermoEléctrico', 'Vehicular (excluye GNL)']
+
+Distinct Regions:
+['CQR', 'Centro', 'Costa Atlántica', 'Costa Interior', 'Magdalena Medio', 'Nacional', 'NorOccidente', 'NorOriente', 'SurOccidente', 'Tolima-Huila']
+
+Sample Record:
+Sector: Agregado, Region: Nacional, Escenario: Bajo, Anio: 2024, Demanda: 1380.7234337788072

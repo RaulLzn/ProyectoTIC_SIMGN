@@ -3,7 +3,7 @@ import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, AreaChart, Area,
     PieChart, Pie, Legend, LineChart, Line, ComposedChart
 } from 'recharts';
-import { fetchRoyalties } from '../services/api';
+import { fetchRoyaltiesKPIs, fetchRoyaltiesTrend, fetchRoyaltiesMap, fetchRoyaltiesDistribution, fetchRoyaltiesRanking } from '../services/api';
 import { adaptRoyalty } from '../adapters/adapters';
 import { RoyaltyRecord, MapData, RoyaltiesFilters } from '../types';
 import { Coins, DollarSign, TrendingUp, AlertCircle, Droplets, Flame, Activity } from 'lucide-react';
@@ -14,20 +14,68 @@ import { getTipoHidrocarburoLabel, getTipoProduccionLabel } from '../utils/nomen
 import { normalizeDepartmentName } from '../utils/departmentNames';
 
 const Regalias: React.FC = () => {
-    const [royalties, setRoyalties] = useState<RoyaltyRecord[]>([]);
+    // Aggregated State
+    const [kpis, setKpis] = useState({ totalAmount: 0, totalVolume: 0, avgPriceUsd: 0, municipalities: 0 });
+    const [trendData, setTrendData] = useState<any[]>([]);
+    const [mapData, setMapData] = useState<MapData[]>([]);
+    const [distributionData, setDistributionData] = useState<any[]>([]);
+    const [rankingData, setRankingData] = useState<any[]>([]);
+
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [activeFilters, setActiveFilters] = useState<RoyaltiesFilters>({});
+
+    const currencyFormatter = (value: number) => 
+        new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(value);
+
+    const numberFormatter = (value: number) => 
+        new Intl.NumberFormat('es-CO', { maximumFractionDigits: 2 }).format(value);
 
     useEffect(() => {
         const loadData = async () => {
             try {
                 setLoading(true);
-                const data = await fetchRoyalties(activeFilters);
-                const adaptedData = data.map(adaptRoyalty);
-                setRoyalties(adaptedData);
-                console.log('Loaded royalties:', adaptedData.length, 'records');
-                console.log('Sample:', adaptedData[0]);
+                // Fetch all aggregated data in parallel
+                const [kpiData, trend, map, dist, ranking] = await Promise.all([
+                    fetchRoyaltiesKPIs(activeFilters),
+                    fetchRoyaltiesTrend(activeFilters),
+                    fetchRoyaltiesMap(activeFilters),
+                    fetchRoyaltiesDistribution(activeFilters),
+                    fetchRoyaltiesRanking(activeFilters)
+                ]);
+
+                setKpis(kpiData);
+                setTrendData(trend);
+                
+                // Process map data for component
+                const processedMapData = map.map((item: any) => ({
+                    departmentId: normalizeDepartmentName(item.department),
+                    departmentName: normalizeDepartmentName(item.department),
+                    value: item.value,
+                    formattedValue: currencyFormatter(item.value),
+                    metricLabel: 'Regalías'
+                }));
+                setMapData(processedMapData);
+
+                // Process distribution data
+                const processedDist = dist.map((item: any) => ({
+                    name: getTipoHidrocarburoLabel(item.name),
+                    value: item.value
+                }));
+                setDistributionData(processedDist);
+
+                // Process ranking data
+                // Note: Backend currently doesn't return types per field for icon logic, 
+                // so we'll simplify or need to update backend if icons are critical.
+                // For now, let's just show the name.
+                const processedRanking = ranking.map((item: any) => ({
+                    name: item.name,
+                    value: item.value,
+                    rawName: item.name
+                }));
+                setRankingData(processedRanking);
+                
+                console.log('Loaded aggregated royalties data');
             } catch (err) {
                 console.error("Error loading royalties:", err);
                 setError("No se pudieron cargar los datos de regalías. Asegúrese de que el backend esté en ejecución.");
@@ -38,153 +86,6 @@ const Regalias: React.FC = () => {
         loadData();
     }, [activeFilters]);
 
-    const totalAmount = useMemo(() => royalties.reduce((acc, curr) => acc + curr.valor, 0), [royalties]);
-    const totalVolume = useMemo(() => royalties.reduce((acc, curr) => acc + (curr.volumen_regalia || 0), 0), [royalties]);
-    const avgPriceUsd = useMemo(() => {
-        const valid = royalties.filter(r => r.precio_usd > 0);
-        return valid.length ? valid.reduce((acc, curr) => acc + curr.precio_usd, 0) / valid.length : 0;
-    }, [royalties]);
-
-    const currencyFormatter = (value: number) => 
-        new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(value);
-
-    const numberFormatter = (value: number) => 
-        new Intl.NumberFormat('es-CO', { maximumFractionDigits: 2 }).format(value);
-
-    // Map Data - Using departamento from backend with normalization
-    const mapData: MapData[] = useMemo(() => {
-        const map = new Map<string, number>();
-        royalties.forEach(r => {
-            // Normalize department name to match ColombiaMap expectations
-            const dept = normalizeDepartmentName(r.entidad_territorial);
-            if (dept && dept !== 'Desconocido') {
-                map.set(dept, (map.get(dept) || 0) + r.valor);
-            }
-        });
-        const result = Array.from(map).map(([name, value]) => ({
-            departmentId: name,
-            departmentName: name,
-            value: value,
-            formattedValue: currencyFormatter(value),
-            metricLabel: 'Regalías'
-        }));
-        console.log('Map data generated:', result.length, 'departments');
-        console.log('All departments:', result.map(d => d.departmentName));
-        console.log('Sample values:', result.slice(0, 3));
-        return result;
-    }, [royalties]);
-
-    // Time Series Data - Optimized for large datasets
-    const timeSeriesData = useMemo(() => {
-        if (royalties.length === 0) return [];
-        
-        // Calculate year range efficiently
-        let minYear = Infinity;
-        let maxYear = -Infinity;
-        
-        for (const r of royalties) {
-            if (r.anio < minYear) minYear = r.anio;
-            if (r.anio > maxYear) maxYear = r.anio;
-        }
-        
-        const yearRange = maxYear - minYear + 1;
-        const shouldAggregateByYear = yearRange > 2;
-        
-        if (shouldAggregateByYear) {
-            // Aggregate by year - optimized for large datasets
-            const yearMap: Record<number, { valor: number; volumen: number; precio: number; count: number }> = {};
-            
-            for (const r of royalties) {
-                const year = r.anio;
-                if (!yearMap[year]) {
-                    yearMap[year] = { valor: 0, volumen: 0, precio: 0, count: 0 };
-                }
-                yearMap[year].valor += r.valor;
-                yearMap[year].volumen += r.volumen_regalia || 0;
-                yearMap[year].precio += r.precio_usd || 0;
-                yearMap[year].count += 1;
-            }
-            
-            return Object.entries(yearMap)
-                .map(([year, data]) => ({
-                    name: year,
-                    valor: data.valor,
-                    volumen: data.volumen,
-                    precio: data.count > 0 ? data.precio / data.count : 0
-                }))
-                .sort((a, b) => parseInt(a.name) - parseInt(b.name));
-        } else {
-            // Aggregate by month - optimized
-            const monthMap: Record<string, { valor: number; volumen: number; precio: number; count: number }> = {};
-            
-            for (const r of royalties) {
-                const key = r.fecha_periodo;
-                if (!monthMap[key]) {
-                    monthMap[key] = { valor: 0, volumen: 0, precio: 0, count: 0 };
-                }
-                monthMap[key].valor += r.valor;
-                monthMap[key].volumen += r.volumen_regalia || 0;
-                monthMap[key].precio += r.precio_usd || 0;
-                monthMap[key].count += 1;
-            }
-            
-            return Object.entries(monthMap)
-                .map(([month, data]) => ({
-                    name: month,
-                    valor: data.valor,
-                    volumen: data.volumen,
-                    precio: data.count > 0 ? data.precio / data.count : 0
-                }))
-                .sort((a, b) => a.name.localeCompare(b.name));
-        }
-    }, [royalties]);
-
-    // By Hydrocarbon Type
-    const byType = useMemo(() => {
-        const map = new Map<string, number>();
-        royalties.forEach(r => {
-            const type = getTipoHidrocarburoLabel(r.tipo_hidrocarburo);
-            map.set(type, (map.get(type) || 0) + r.valor);
-        });
-        return Array.from(map).map(([name, value]) => ({ name, value }));
-    }, [royalties]);
-
-    // Top Fields - Show ALL fields with hydrocarbon type
-    const byField = useMemo(() => {
-        const fieldMap: Record<string, { valor: number; tipos: Set<string> }> = {};
-        
-        for (const r of royalties) {
-            const field = r.campo || 'Desconocido';
-            if (!fieldMap[field]) {
-                fieldMap[field] = { valor: 0, tipos: new Set() };
-            }
-            fieldMap[field].valor += r.valor;
-            if (r.tipo_hidrocarburo) {
-                fieldMap[field].tipos.add(r.tipo_hidrocarburo);
-            }
-        }
-        
-        return Object.entries(fieldMap)
-            .map(([name, data]) => {
-                // Determine icon based on hydrocarbon types
-                const tipos = Array.from(data.tipos);
-                let icon = '';
-                if (tipos.includes('G') && tipos.includes('O')) {
-                    icon = '🛢️💨'; // Both
-                } else if (tipos.includes('G')) {
-                    icon = '💨'; // Gas
-                } else if (tipos.includes('O')) {
-                    icon = '🛢️'; // Oil
-                }
-                
-                return {
-                    name: `${icon} ${name}`,
-                    value: data.valor,
-                    rawName: name
-                };
-            })
-            .sort((a, b) => b.value - a.value); // Sort by value descending (top to bottom)
-    }, [royalties]);
 
     const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 
@@ -219,27 +120,27 @@ const Regalias: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <MetricCard 
                     title="Total Regalías" 
-                    value={currencyFormatter(totalAmount)}
+                    value={currencyFormatter(kpis.totalAmount)}
                     icon={DollarSign}
                     color="green"
                 />
                 <MetricCard 
                     title="Volumen Total" 
-                    value={numberFormatter(totalVolume)} 
+                    value={numberFormatter(kpis.totalVolume)} 
                     trendLabel="Bls/Kpc"
                     icon={Droplets}
                     color="blue"
                 />
                 <MetricCard 
                     title="Precio Promedio" 
-                    value={`$${numberFormatter(avgPriceUsd)}`} 
+                    value={`$${numberFormatter(kpis.avgPriceUsd)}`} 
                     trendLabel="USD/Unidad"
                     icon={Activity}
                     color="orange"
                 />
                 <MetricCard 
                     title="Municipios" 
-                    value={new Set(royalties.map(r => r.municipio)).size.toString()} 
+                    value={kpis.municipalities.toString()} 
                     trendLabel="Beneficiados"
                     icon={Coins}
                     color="purple"
@@ -253,7 +154,7 @@ const Regalias: React.FC = () => {
                     <p className="text-sm text-slate-500 mb-6">Relación entre regalías liquidadas y precio internacional</p>
                     <div className="h-80">
                         <ResponsiveContainer width="100%" height="100%">
-                            <ComposedChart data={timeSeriesData}>
+                            <ComposedChart data={trendData}>
                                 <defs>
                                     <linearGradient id="colorValor" x1="0" y1="0" x2="0" y2="1">
                                         <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
@@ -262,11 +163,12 @@ const Regalias: React.FC = () => {
                                 </defs>
                                 <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
                                 <XAxis 
-                                    dataKey="name" 
+                                    dataKey="year" 
                                     tick={{ fontSize: 11, fill: '#64748b' }}
                                     angle={-45}
                                     textAnchor="end"
                                     height={80}
+                                    tickFormatter={(val) => val ? val.toString() : ''}
                                 />
                                 <YAxis 
                                     yAxisId="left"
@@ -286,6 +188,7 @@ const Regalias: React.FC = () => {
                                         if (name === 'Precio Promedio (USD)') return [`$${value.toFixed(2)}`, name];
                                         return [value, name];
                                     }}
+                                    labelFormatter={(label) => `Año: ${label}`}
                                 />
                                 <Area 
                                     yAxisId="left"
@@ -318,7 +221,7 @@ const Regalias: React.FC = () => {
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
                                 <Pie
-                                    data={byType}
+                                    data={distributionData}
                                     cx="50%"
                                     cy="50%"
                                     innerRadius={60}
@@ -326,7 +229,7 @@ const Regalias: React.FC = () => {
                                     paddingAngle={5}
                                     dataKey="value"
                                 >
-                                    {byType.map((entry, index) => (
+                                    {distributionData.map((entry, index) => (
                                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                     ))}
                                 </Pie>
@@ -359,7 +262,7 @@ const Regalias: React.FC = () => {
                     <div className="h-[600px]">
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart 
-                                data={byField.slice(0, 20)} 
+                                data={rankingData} 
                                 layout="vertical"
                                 margin={{ top: 5, right: 30, left: 160, bottom: 5 }}
                             >
@@ -381,11 +284,11 @@ const Regalias: React.FC = () => {
                                     labelFormatter={(label: string) => label.replace(/[🛢️💨]/g, '').trim()}
                                 />
                                 <Bar dataKey="value" radius={[0, 8, 8, 0]} barSize={22}>
-                                    {byField.slice(0, 20).map((entry, index) => (
+                                    {rankingData.map((entry, index) => (
                                         <Cell 
                                             key={`cell-${index}`} 
-                                            fill={entry.name.includes('💨') && entry.name.includes('🛢️') ? '#8b5cf6' : 
-                                                  entry.name.includes('💨') ? '#3b82f6' : '#10b981'} 
+                                            fill={entry.name.includes('Gas') && entry.name.includes('Aceite') ? '#8b5cf6' : 
+                                                  entry.name.includes('Gas') ? '#3b82f6' : '#10b981'} 
                                         />
                                     ))}
                                 </Bar>

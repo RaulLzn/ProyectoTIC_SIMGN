@@ -1,27 +1,57 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { BarChart3, TrendingUp, TrendingDown, Activity, Calendar } from 'lucide-react';
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { fetchProduction, fetchDemand, fetchRoyalties } from '../services/api';
-import { adaptProduction, adaptDemand, adaptRoyalty } from '../adapters/adapters';
-import { ProductionRecord, DemandRecord, RoyaltyRecord } from '../types';
+import { 
+    fetchProductionKPIs, fetchDemandKPIs, fetchRoyaltiesKPIs,
+    fetchProductionTrend, fetchDemandTrend, fetchRoyaltiesTrend,
+    fetchProductionRanking
+} from '../services/api';
 
 const Estadisticas = () => {
-    const [productionData, setProductionData] = useState<ProductionRecord[]>([]);
-    const [demandData, setDemandData] = useState<DemandRecord[]>([]);
-    const [royaltiesData, setRoyaltiesData] = useState<RoyaltyRecord[]>([]);
+    const [kpis, setKpis] = useState({
+        prod: { total: 0, avg: 0 },
+        dem: { total: 0, avg: 0 },
+        roy: { total: 0, avg: 0 }
+    });
+    const [trends, setTrends] = useState({
+        prod: [] as any[],
+        dem: [] as any[],
+        roy: [] as any[]
+    });
+    const [distribucionProduccion, setDistribucionProduccion] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const loadData = async () => {
             try {
-                const [prod, dem, roy] = await Promise.all([
-                    fetchProduction(),
-                    fetchDemand(),
-                    fetchRoyalties()
+                const [
+                    prodKPIs, demKPIs, royKPIs,
+                    prodTrend, demTrend, royTrend,
+                    prodDist
+                ] = await Promise.all([
+                    fetchProductionKPIs(),
+                    fetchDemandKPIs(),
+                    fetchRoyaltiesKPIs(),
+                    fetchProductionTrend(),
+                    fetchDemandTrend(),
+                    fetchRoyaltiesTrend(),
+                    fetchProductionRanking('operadora', undefined) // Top operators
                 ]);
-                setProductionData(prod.map(adaptProduction));
-                setDemandData(dem.map(adaptDemand));
-                setRoyaltiesData(roy.map(adaptRoyalty));
+
+                setKpis({
+                    prod: { total: prodKPIs.totalProduction, avg: prodKPIs.averageMonthly },
+                    dem: { total: demKPIs.totalReal + demKPIs.totalProjected, avg: 0 }, // Avg calculated later
+                    roy: { total: royKPIs.totalAmount, avg: 0 } // Avg calculated later
+                });
+
+                setTrends({
+                    prod: prodTrend,
+                    dem: demTrend,
+                    roy: royTrend
+                });
+
+                setDistribucionProduccion(prodDist);
+
             } catch (error) {
                 console.error("Error loading statistics data:", error);
             } finally {
@@ -31,44 +61,31 @@ const Estadisticas = () => {
         loadData();
     }, []);
 
-    // Cálculos estadísticos
-    const totalProduccion = productionData.reduce((sum, item) => sum + item.valor, 0);
-    const totalDemanda = demandData.reduce((sum, item) => sum + item.valor_real, 0);
-    const totalRegalias = royaltiesData.reduce((sum, item) => sum + item.valor, 0);
-    
-    const promProduccion = productionData.length ? totalProduccion / productionData.length : 0;
-    const promDemanda = demandData.length ? totalDemanda / demandData.length : 0;
-    const promRegalias = royaltiesData.length ? totalRegalias / royaltiesData.length : 0;
-
-    // Distribución por fuente (por operador)
-    const distribucionProduccion = useMemo(() => {
-        const operadorMap = new Map<string, number>();
-        productionData.forEach(p => {
-            operadorMap.set(p.operador, (operadorMap.get(p.operador) || 0) + p.valor);
-        });
-        return Array.from(operadorMap).map(([name, value]) => ({ name, value }));
-    }, [productionData]);
-
-    // Comparación mensual
+    // Comparación mensual (Merge trends)
     const comparacionMensual = useMemo(() => {
-        const periodoMap = new Map<string, { produccion: number; demanda: number }>();
-        productionData.forEach(p => {
-            const existing = periodoMap.get(p.fecha_periodo) || { produccion: 0, demanda: 0 };
-            existing.produccion += p.valor;
-            periodoMap.set(p.fecha_periodo, existing);
+        const map = new Map<string, { produccion: number; demanda: number }>();
+        
+        trends.prod.forEach(p => {
+            const key = `${p.year}-${String(p.month).padStart(2, '0')}`;
+            if (!map.has(key)) map.set(key, { produccion: 0, demanda: 0 });
+            map.get(key)!.produccion = p.total;
         });
-        demandData.forEach(d => {
-            const existing = periodoMap.get(d.fecha_periodo) || { produccion: 0, demanda: 0 };
-            existing.demanda += d.valor_real;
-            periodoMap.set(d.fecha_periodo, existing);
+
+        trends.dem.forEach(d => {
+            // d.name is already YYYY-MM
+            const key = d.name;
+            if (!map.has(key)) map.set(key, { produccion: 0, demanda: 0 });
+            map.get(key)!.demanda = d.real + d.projected;
         });
-        return Array.from(periodoMap).map(([mes, data]) => ({
-            mes: mes.substring(5), // Solo mostrar MM
+
+        return Array.from(map).map(([mes, data]) => ({
+            mes: mes, // Keep YYYY-MM for sorting
+            displayMes: mes.substring(5), // MM
             produccion: data.produccion,
             demanda: data.demanda,
             diferencia: data.produccion - data.demanda
         })).sort((a, b) => a.mes.localeCompare(b.mes));
-    }, [productionData, demandData]);
+    }, [trends]);
 
     // Tendencias
     const promTendencia = useMemo(() => {
@@ -96,7 +113,7 @@ const Estadisticas = () => {
                         <Activity className="w-5 h-5 text-blue-500" />
                     </div>
                     <p className="text-2xl font-bold text-slate-900">
-                        {(totalProduccion / 1000).toFixed(1)}K
+                        {(kpis.prod.total / 1000).toFixed(1)}K
                     </p>
                     <p className="text-xs text-slate-500 mt-1">GBTUD acumulado</p>
                 </div>
@@ -107,7 +124,7 @@ const Estadisticas = () => {
                         <TrendingUp className="w-5 h-5 text-emerald-500" />
                     </div>
                     <p className="text-2xl font-bold text-slate-900">
-                        {(totalDemanda / 1000).toFixed(1)}K
+                        {(kpis.dem.total / 1000).toFixed(1)}K
                     </p>
                     <p className="text-xs text-slate-500 mt-1">GBTUD acumulado</p>
                 </div>
@@ -118,7 +135,7 @@ const Estadisticas = () => {
                         <BarChart3 className="w-5 h-5 text-amber-500" />
                     </div>
                     <p className="text-2xl font-bold text-slate-900">
-                        ${(totalRegalias / 1000000).toFixed(1)}M
+                        ${(kpis.roy.total / 1000000).toFixed(1)}M
                     </p>
                     <p className="text-xs text-slate-500 mt-1">COP recaudado</p>
                 </div>
@@ -150,7 +167,7 @@ const Estadisticas = () => {
                     <ResponsiveContainer width="100%" height={300}>
                         <LineChart data={comparacionMensual}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                            <XAxis dataKey="mes" stroke="#64748b" style={{ fontSize: '12px' }} />
+                            <XAxis dataKey="displayMes" stroke="#64748b" style={{ fontSize: '12px' }} />
                             <YAxis stroke="#64748b" style={{ fontSize: '12px' }} />
                             <Tooltip 
                                 contentStyle={{ 
@@ -223,7 +240,7 @@ const Estadisticas = () => {
                 <ResponsiveContainer width="100%" height={300}>
                     <BarChart data={comparacionMensual}>
                         <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                        <XAxis dataKey="mes" stroke="#64748b" style={{ fontSize: '12px' }} />
+                        <XAxis dataKey="displayMes" stroke="#64748b" style={{ fontSize: '12px' }} />
                         <YAxis stroke="#64748b" style={{ fontSize: '12px' }} />
                         <Tooltip 
                             contentStyle={{ 
@@ -251,18 +268,18 @@ const Estadisticas = () => {
                     <div className="space-y-2 text-sm">
                         <div className="flex justify-between">
                             <span className="text-blue-700">Promedio mensual:</span>
-                            <span className="font-bold text-blue-900">{promProduccion.toFixed(1)} GBTUD</span>
+                            <span className="font-bold text-blue-900">{kpis.prod.avg.toFixed(1)} GBTUD</span>
                         </div>
                         <div className="flex justify-between">
                             <span className="text-blue-700">Máximo:</span>
                             <span className="font-bold text-blue-900">
-                                {productionData.length ? Math.max(...productionData.map(p => p.valor)).toFixed(1) : 0} GBTUD
+                                {trends.prod.length ? Math.max(...trends.prod.map(p => p.total)).toFixed(1) : 0} GBTUD
                             </span>
                         </div>
                         <div className="flex justify-between">
                             <span className="text-blue-700">Mínimo:</span>
                             <span className="font-bold text-blue-900">
-                                {productionData.length ? Math.min(...productionData.map(p => p.valor)).toFixed(1) : 0} GBTUD
+                                {trends.prod.length ? Math.min(...trends.prod.map(p => p.total)).toFixed(1) : 0} GBTUD
                             </span>
                         </div>
                     </div>
@@ -273,18 +290,18 @@ const Estadisticas = () => {
                     <div className="space-y-2 text-sm">
                         <div className="flex justify-between">
                             <span className="text-emerald-700">Promedio mensual:</span>
-                            <span className="font-bold text-emerald-900">{promDemanda.toFixed(1)} GBTUD</span>
+                            <span className="font-bold text-emerald-900">{(trends.dem.length ? (kpis.dem.total / trends.dem.length) : 0).toFixed(1)} GBTUD</span>
                         </div>
                         <div className="flex justify-between">
                             <span className="text-emerald-700">Máximo:</span>
                             <span className="font-bold text-emerald-900">
-                                {demandData.length ? Math.max(...demandData.map(d => d.valor_real)).toFixed(1) : 0} GBTUD
+                                {trends.dem.length ? Math.max(...trends.dem.map(d => d.real + d.projected)).toFixed(1) : 0} GBTUD
                             </span>
                         </div>
                         <div className="flex justify-between">
                             <span className="text-emerald-700">Mínimo:</span>
                             <span className="font-bold text-emerald-900">
-                                {demandData.length ? Math.min(...demandData.map(d => d.valor_real)).toFixed(1) : 0} GBTUD
+                                {trends.dem.length ? Math.min(...trends.dem.map(d => d.real + d.projected)).toFixed(1) : 0} GBTUD
                             </span>
                         </div>
                     </div>
@@ -295,18 +312,18 @@ const Estadisticas = () => {
                     <div className="space-y-2 text-sm">
                         <div className="flex justify-between">
                             <span className="text-amber-700">Promedio mensual:</span>
-                            <span className="font-bold text-amber-900">${(promRegalias / 1000000).toFixed(1)}M COP</span>
+                            <span className="font-bold text-amber-900">${(trends.roy.length ? (kpis.roy.total / trends.roy.length) / 1000000 : 0).toFixed(1)}M COP</span>
                         </div>
                         <div className="flex justify-between">
                             <span className="text-amber-700">Máximo:</span>
                             <span className="font-bold text-amber-900">
-                                {royaltiesData.length ? `$${(Math.max(...royaltiesData.map(r => r.valor)) / 1000000).toFixed(1)}M COP` : '$0 COP'}
+                                {trends.roy.length ? `$${(Math.max(...trends.roy.map(r => r.valor)) / 1000000).toFixed(1)}M COP` : '$0 COP'}
                             </span>
                         </div>
                         <div className="flex justify-between">
                             <span className="text-amber-700">Mínimo:</span>
                             <span className="font-bold text-amber-900">
-                                {royaltiesData.length ? `$${(Math.min(...royaltiesData.map(r => r.valor)) / 1000000).toFixed(1)}M COP` : '$0 COP'}
+                                {trends.roy.length ? `$${(Math.min(...trends.roy.map(r => r.valor)) / 1000000).toFixed(1)}M COP` : '$0 COP'}
                             </span>
                         </div>
                     </div>

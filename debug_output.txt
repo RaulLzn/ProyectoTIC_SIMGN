@@ -1,0 +1,14 @@
+--- Demand Data Debug ---
+Total records: 8062
+
+Distinct Scenarios:
+['778.516739052215', 'Medio']
+
+Distinct Sectors:
+['Agregado', 'Compresores', 'Industrial', 'Petrolero', 'Petroquímico', 'Residencial', 'Terciario', 'TermoEléctrico', 'Total', 'Total Sin TermoEléctrico', 'Vehicular (excluye GNL)']
+
+Distinct Regions:
+['CQR', 'Centro', 'Costa Atlántica', 'Costa Interior', 'Magdalena Medio', 'Nacional', 'NorOccidente', 'NorOriente', 'SurOccidente', 'Tolima-Huila']
+
+Sample Record:
+Sector: Agregado, Region: Nacional, Escenario: 778.516739052215, Anio: 2009, Demanda: 726.8395656886883
