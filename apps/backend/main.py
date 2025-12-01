@@ -7,6 +7,7 @@ import models
 models.Base.metadata.create_all(bind=engine)
 
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 
 app = FastAPI(title="SIMGN Backend", description="API for Natural Gas Data Integration", version="1.0.0")
 
@@ -18,6 +19,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Enable Gzip Compression
+app.add_middleware(GZipMiddleware, minimum_size=1000)
 
 app.include_router(api.router, prefix="/api")
 

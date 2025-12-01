@@ -1,6 +1,8 @@
 import { RoyaltyRecord, ProductionRecord, DemandRecord, RoyaltyBackend, ProductionBackend, DemandBackend, RoyaltiesFilters, RoyaltiesFilterOptions, ProductionFilters, ProductionFilterOptions } from '../types';
 
-const API_URL = 'http://localhost:8000/api';
+// CAMBIO CRÍTICO AQUÍ:
+// Usamos la variable de entorno. Si no existe (como en local a veces), usa localhost como respaldo.
+const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8000') + '/api';
 
 
 export interface BackendProduction {

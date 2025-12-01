@@ -15,6 +15,8 @@ import {
     MessageCircle
 } from 'lucide-react';
 
+import logoMinEnergia from '../assets/img/logoMinenergia.png';
+
 const Sidebar: React.FC = () => {
     const [showHelpMenu, setShowHelpMenu] = useState(false);
 
@@ -32,7 +34,7 @@ const Sidebar: React.FC = () => {
         <aside className="w-64 bg-slate-900 text-white h-screen flex flex-col fixed left-0 top-0 z-20 shadow-xl hidden md:flex">
             <div className="p-6 border-b border-slate-700 flex flex-col items-center gap-4">
                 <img 
-                    src="/assets/img/logoMinenergia.png" 
+                    src={logoMinEnergia} 
                     alt="Ministerio de Energía" 
                     className="h-20 w-auto"
                 />
