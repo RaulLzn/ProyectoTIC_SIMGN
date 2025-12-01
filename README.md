@@ -116,6 +116,10 @@ Este proyecto utiliza datos públicos bajo la licencia de Gobierno Abierto de Co
 | **Proyección de Demanda**   | [Planeación Energética](https://www1.upme.gov.co/)           | UPME              |
 
 ---
+## Información adicional
+**Repositorio:** https://github.com/RaulLzn/ProyectoTIC_SIMGN-backend
+
+**Pagina web:** https://proyectotic-simgn-1.onrender.com/#/produccion
 
 ---
 
@@ -123,7 +127,7 @@ Este proyecto utiliza datos públicos bajo la licencia de Gobierno Abierto de Co
   Desarrollado por
   <a href="https://github.com/ZValentinaF">Valentina Fuentes</a>,
   <a href="https://github.com/RaulLzn">Raúl Lozano</a> y
-  <a href="https://github.com/Angelica-994">Angeliza Parra</a>
+  <a href="https://github.com/Angelica-994">Angélica Grazt</a>
   <br>
   para el concurso <b>Datos al Ecosistema 2025</b>.
 </p>
