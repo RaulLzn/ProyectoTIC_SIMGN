@@ -10,6 +10,186 @@ interface ColombiaMapProps {
     colorScale?: 'blue' | 'green' | 'orange';
 }
 
+// Mapa de Colombia más realista con forma geográfica apropiada
+const departments = [
+    // COSTA CARIBE - Siguiendo la costa norte de Colombia
+    { 
+        id: 'La Guajira', name: 'La Guajira', 
+        path: 'M650,50 L720,40 L750,60 L780,90 L770,130 L740,150 L700,140 L670,120 L650,90 Z',
+        labelX: 715, labelY: 95, shortName: 'LA GUAJIRA'
+    },
+    { 
+        id: 'Magdalena', name: 'Magdalena', 
+        path: 'M580,80 L650,70 L670,110 L650,140 L620,150 L590,140 L580,110 Z',
+        labelX: 620, labelY: 115, shortName: 'MAGDALENA'
+    },
+    { 
+        id: 'Atlántico', name: 'Atlántico', 
+        path: 'M540,100 L580,90 L590,120 L570,140 L550,135 L540,120 Z',
+        labelX: 565, labelY: 115, shortName: 'ATLÁNTICO'
+    },
+    { 
+        id: 'Cesar', name: 'Cesar', 
+        path: 'M620,160 L680,150 L700,180 L680,220 L650,230 L620,210 Z',
+        labelX: 660, labelY: 190, shortName: 'CESAR'
+    },
+    { 
+        id: 'Bolívar', name: 'Bolívar', 
+        path: 'M480,140 L580,130 L590,180 L570,220 L530,240 L490,220 L480,180 Z',
+        labelX: 535, labelY: 185, shortName: 'BOLÍVAR'
+    },
+    { 
+        id: 'Sucre', name: 'Sucre', 
+        path: 'M430,220 L490,210 L500,250 L480,280 L450,275 L430,250 Z',
+        labelX: 465, labelY: 245, shortName: 'SUCRE'
+    },
+    { 
+        id: 'Córdoba', name: 'Córdoba', 
+        path: 'M380,260 L430,250 L440,290 L420,320 L390,315 L380,285 Z',
+        labelX: 410, labelY: 285, shortName: 'CÓRDOBA'
+    },
+
+    // REGIÓN ANDINA - Siguiendo la cordillera de los Andes
+    { 
+        id: 'Norte de Santander', name: 'Norte de Santander', 
+        path: 'M590,200 L650,190 L670,230 L650,270 L620,275 L590,250 Z',
+        labelX: 630, labelY: 235, shortName: 'N. SANTANDER'
+    },
+    { 
+        id: 'Santander', name: 'Santander', 
+        path: 'M520,270 L590,260 L610,320 L580,360 L540,365 L520,325 Z',
+        labelX: 565, labelY: 315, shortName: 'SANTANDER'
+    },
+    { 
+        id: 'Boyacá', name: 'Boyacá', 
+        path: 'M480,360 L540,350 L560,400 L540,440 L500,445 L480,405 Z',
+        labelX: 520, labelY: 400, shortName: 'BOYACÁ'
+    },
+    { 
+        id: 'Antioquia', name: 'Antioquia', 
+        path: 'M350,320 L420,310 L450,370 L430,420 L380,435 L350,385 Z',
+        labelX: 400, labelY: 375, shortName: 'ANTIOQUIA'
+    },
+    { 
+        id: 'Caldas', name: 'Caldas', 
+        path: 'M380,440 L430,430 L450,470 L430,500 L400,495 L380,465 Z',
+        labelX: 415, labelY: 465, shortName: 'CALDAS'
+    },
+    { 
+        id: 'Risaralda', name: 'Risaralda', 
+        path: 'M330,470 L380,460 L390,490 L370,510 L350,505 L330,485 Z',
+        labelX: 360, labelY: 485, shortName: 'RISARALDA'
+    },
+    { 
+        id: 'Quindío', name: 'Quindío', 
+        path: 'M360,510 L390,500 L400,530 L380,550 L360,540 Z',
+        labelX: 380, labelY: 525, shortName: 'QUINDÍO'
+    },
+    { 
+        id: 'Cundinamarca', name: 'Cundinamarca', 
+        path: 'M450,450 L520,440 L540,500 L520,540 L470,545 L450,485 Z',
+        labelX: 495, labelY: 495, shortName: 'CUNDINAMARCA'
+    },
+    { 
+        id: 'Bogotá D.C.', name: 'Bogotá D.C.', 
+        path: 'M485,515 L505,510 L510,530 L490,535 Z',
+        labelX: 497, labelY: 522, shortName: 'BOGOTÁ'
+    },
+    { 
+        id: 'Tolima', name: 'Tolima', 
+        path: 'M420,550 L480,540 L500,590 L480,630 L440,635 L420,595 Z',
+        labelX: 460, labelY: 590, shortName: 'TOLIMA'
+    },
+    { 
+        id: 'Huila', name: 'Huila', 
+        path: 'M400,640 L460,630 L480,680 L460,720 L420,725 L400,685 Z',
+        labelX: 440, labelY: 675, shortName: 'HUILA'
+    },
+
+    // REGIÓN PACÍFICA - Costa occidental de Colombia
+    { 
+        id: 'Chocó', name: 'Chocó', 
+        path: 'M250,350 L330,340 L350,420 L330,480 L280,490 L250,430 Z',
+        labelX: 300, labelY: 415, shortName: 'CHOCÓ'
+    },
+    { 
+        id: 'Valle del Cauca', name: 'Valle del Cauca', 
+        path: 'M290,520 L370,510 L390,570 L370,610 L320,615 L290,565 Z',
+        labelX: 340, labelY: 565, shortName: 'VALLE'
+    },
+    { 
+        id: 'Cauca', name: 'Cauca', 
+        path: 'M320,620 L390,610 L410,670 L390,710 L340,715 L320,665 Z',
+        labelX: 365, labelY: 665, shortName: 'CAUCA'
+    },
+    { 
+        id: 'Nariño', name: 'Nariño', 
+        path: 'M310,720 L390,710 L410,770 L390,810 L340,815 L310,765 Z',
+        labelX: 360, labelY: 765, shortName: 'NARIÑO'
+    },
+
+    // REGIÓN ORINOQUÍA - Llanos orientales
+    { 
+        id: 'Arauca', name: 'Arauca', 
+        path: 'M610,340 L690,330 L710,380 L690,420 L650,425 L610,385 Z',
+        labelX: 660, labelY: 380, shortName: 'ARAUCA'
+    },
+    { 
+        id: 'Casanare', name: 'Casanare', 
+        path: 'M560,420 L640,410 L660,470 L640,510 L590,515 L560,465 Z',
+        labelX: 610, labelY: 465, shortName: 'CASANARE'
+    },
+    { 
+        id: 'Meta', name: 'Meta', 
+        path: 'M520,550 L590,540 L610,610 L590,670 L540,675 L520,625 Z',
+        labelX: 565, labelY: 615, shortName: 'META'
+    },
+    { 
+        id: 'Vichada', name: 'Vichada', 
+        path: 'M650,460 L730,450 L750,520 L730,580 L680,585 L650,525 Z',
+        labelX: 700, labelY: 520, shortName: 'VICHADA'
+    },
+
+    // REGIÓN AMAZONÍA - Selva amazónica
+    { 
+        id: 'Guaviare', name: 'Guaviare', 
+        path: 'M590,680 L660,670 L680,730 L660,770 L620,775 L590,725 Z',
+        labelX: 635, labelY: 725, shortName: 'GUAVIARE'
+    },
+    { 
+        id: 'Caquetá', name: 'Caquetá', 
+        path: 'M480,730 L550,720 L570,780 L550,820 L500,825 L480,775 Z',
+        labelX: 525, labelY: 775, shortName: 'CAQUETÁ'
+    },
+    { 
+        id: 'Putumayo', name: 'Putumayo', 
+        path: 'M410,820 L480,810 L500,870 L480,910 L430,915 L410,865 Z',
+        labelX: 455, labelY: 865, shortName: 'PUTUMAYO'
+    },
+    { 
+        id: 'Vaupés', name: 'Vaupés', 
+        path: 'M570,830 L650,820 L670,880 L650,920 L600,925 L570,875 Z',
+        labelX: 620, labelY: 875, shortName: 'VAUPÉS'
+    },
+    { 
+        id: 'Guainía', name: 'Guainía', 
+        path: 'M680,590 L760,580 L780,640 L760,680 L710,685 L680,635 Z',
+        labelX: 730, labelY: 635, shortName: 'GUAINÍA'
+    },
+    { 
+        id: 'Amazonas', name: 'Amazonas', 
+        path: 'M430,920 L570,910 L590,990 L570,1050 L480,1055 L430,1005 Z',
+        labelX: 510, labelY: 985, shortName: 'AMAZONAS'
+    },
+
+    // INSULAR - Islas del Caribe
+    { 
+        id: 'San Andrés y Providencia', name: 'San Andrés y Providencia', 
+        path: 'M150,100 L190,95 L195,130 L155,135 Z',
+        labelX: 172, labelY: 115, shortName: 'SAN ANDRÉS'
+    }
+];
+
 const ColombiaMap: React.FC<ColombiaMapProps> = ({ 
     data, 
     title, 
@@ -20,186 +200,6 @@ const ColombiaMap: React.FC<ColombiaMapProps> = ({
 }) => {
     const [hoveredDept, setHoveredDept] = useState<string | null>(null);
     const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
-
-    // Mapa de Colombia más realista con forma geográfica apropiada
-    const departments = [
-        // COSTA CARIBE - Siguiendo la costa norte de Colombia
-        { 
-            id: 'La Guajira', name: 'La Guajira', 
-            path: 'M650,50 L720,40 L750,60 L780,90 L770,130 L740,150 L700,140 L670,120 L650,90 Z',
-            labelX: 715, labelY: 95, shortName: 'LA GUAJIRA'
-        },
-        { 
-            id: 'Magdalena', name: 'Magdalena', 
-            path: 'M580,80 L650,70 L670,110 L650,140 L620,150 L590,140 L580,110 Z',
-            labelX: 620, labelY: 115, shortName: 'MAGDALENA'
-        },
-        { 
-            id: 'Atlántico', name: 'Atlántico', 
-            path: 'M540,100 L580,90 L590,120 L570,140 L550,135 L540,120 Z',
-            labelX: 565, labelY: 115, shortName: 'ATLÁNTICO'
-        },
-        { 
-            id: 'Cesar', name: 'Cesar', 
-            path: 'M620,160 L680,150 L700,180 L680,220 L650,230 L620,210 Z',
-            labelX: 660, labelY: 190, shortName: 'CESAR'
-        },
-        { 
-            id: 'Bolívar', name: 'Bolívar', 
-            path: 'M480,140 L580,130 L590,180 L570,220 L530,240 L490,220 L480,180 Z',
-            labelX: 535, labelY: 185, shortName: 'BOLÍVAR'
-        },
-        { 
-            id: 'Sucre', name: 'Sucre', 
-            path: 'M430,220 L490,210 L500,250 L480,280 L450,275 L430,250 Z',
-            labelX: 465, labelY: 245, shortName: 'SUCRE'
-        },
-        { 
-            id: 'Córdoba', name: 'Córdoba', 
-            path: 'M380,260 L430,250 L440,290 L420,320 L390,315 L380,285 Z',
-            labelX: 410, labelY: 285, shortName: 'CÓRDOBA'
-        },
-
-        // REGIÓN ANDINA - Siguiendo la cordillera de los Andes
-        { 
-            id: 'Norte de Santander', name: 'Norte de Santander', 
-            path: 'M590,200 L650,190 L670,230 L650,270 L620,275 L590,250 Z',
-            labelX: 630, labelY: 235, shortName: 'N. SANTANDER'
-        },
-        { 
-            id: 'Santander', name: 'Santander', 
-            path: 'M520,270 L590,260 L610,320 L580,360 L540,365 L520,325 Z',
-            labelX: 565, labelY: 315, shortName: 'SANTANDER'
-        },
-        { 
-            id: 'Boyacá', name: 'Boyacá', 
-            path: 'M480,360 L540,350 L560,400 L540,440 L500,445 L480,405 Z',
-            labelX: 520, labelY: 400, shortName: 'BOYACÁ'
-        },
-        { 
-            id: 'Antioquia', name: 'Antioquia', 
-            path: 'M350,320 L420,310 L450,370 L430,420 L380,435 L350,385 Z',
-            labelX: 400, labelY: 375, shortName: 'ANTIOQUIA'
-        },
-        { 
-            id: 'Caldas', name: 'Caldas', 
-            path: 'M380,440 L430,430 L450,470 L430,500 L400,495 L380,465 Z',
-            labelX: 415, labelY: 465, shortName: 'CALDAS'
-        },
-        { 
-            id: 'Risaralda', name: 'Risaralda', 
-            path: 'M330,470 L380,460 L390,490 L370,510 L350,505 L330,485 Z',
-            labelX: 360, labelY: 485, shortName: 'RISARALDA'
-        },
-        { 
-            id: 'Quindío', name: 'Quindío', 
-            path: 'M360,510 L390,500 L400,530 L380,550 L360,540 Z',
-            labelX: 380, labelY: 525, shortName: 'QUINDÍO'
-        },
-        { 
-            id: 'Cundinamarca', name: 'Cundinamarca', 
-            path: 'M450,450 L520,440 L540,500 L520,540 L470,545 L450,485 Z',
-            labelX: 495, labelY: 495, shortName: 'CUNDINAMARCA'
-        },
-        { 
-            id: 'Bogotá D.C.', name: 'Bogotá D.C.', 
-            path: 'M485,515 L505,510 L510,530 L490,535 Z',
-            labelX: 497, labelY: 522, shortName: 'BOGOTÁ'
-        },
-        { 
-            id: 'Tolima', name: 'Tolima', 
-            path: 'M420,550 L480,540 L500,590 L480,630 L440,635 L420,595 Z',
-            labelX: 460, labelY: 590, shortName: 'TOLIMA'
-        },
-        { 
-            id: 'Huila', name: 'Huila', 
-            path: 'M400,640 L460,630 L480,680 L460,720 L420,725 L400,685 Z',
-            labelX: 440, labelY: 675, shortName: 'HUILA'
-        },
-
-        // REGIÓN PACÍFICA - Costa occidental de Colombia
-        { 
-            id: 'Chocó', name: 'Chocó', 
-            path: 'M250,350 L330,340 L350,420 L330,480 L280,490 L250,430 Z',
-            labelX: 300, labelY: 415, shortName: 'CHOCÓ'
-        },
-        { 
-            id: 'Valle del Cauca', name: 'Valle del Cauca', 
-            path: 'M290,520 L370,510 L390,570 L370,610 L320,615 L290,565 Z',
-            labelX: 340, labelY: 565, shortName: 'VALLE'
-        },
-        { 
-            id: 'Cauca', name: 'Cauca', 
-            path: 'M320,620 L390,610 L410,670 L390,710 L340,715 L320,665 Z',
-            labelX: 365, labelY: 665, shortName: 'CAUCA'
-        },
-        { 
-            id: 'Nariño', name: 'Nariño', 
-            path: 'M310,720 L390,710 L410,770 L390,810 L340,815 L310,765 Z',
-            labelX: 360, labelY: 765, shortName: 'NARIÑO'
-        },
-
-        // REGIÓN ORINOQUÍA - Llanos orientales
-        { 
-            id: 'Arauca', name: 'Arauca', 
-            path: 'M610,340 L690,330 L710,380 L690,420 L650,425 L610,385 Z',
-            labelX: 660, labelY: 380, shortName: 'ARAUCA'
-        },
-        { 
-            id: 'Casanare', name: 'Casanare', 
-            path: 'M560,420 L640,410 L660,470 L640,510 L590,515 L560,465 Z',
-            labelX: 610, labelY: 465, shortName: 'CASANARE'
-        },
-        { 
-            id: 'Meta', name: 'Meta', 
-            path: 'M520,550 L590,540 L610,610 L590,670 L540,675 L520,625 Z',
-            labelX: 565, labelY: 615, shortName: 'META'
-        },
-        { 
-            id: 'Vichada', name: 'Vichada', 
-            path: 'M650,460 L730,450 L750,520 L730,580 L680,585 L650,525 Z',
-            labelX: 700, labelY: 520, shortName: 'VICHADA'
-        },
-
-        // REGIÓN AMAZONÍA - Selva amazónica
-        { 
-            id: 'Guaviare', name: 'Guaviare', 
-            path: 'M590,680 L660,670 L680,730 L660,770 L620,775 L590,725 Z',
-            labelX: 635, labelY: 725, shortName: 'GUAVIARE'
-        },
-        { 
-            id: 'Caquetá', name: 'Caquetá', 
-            path: 'M480,730 L550,720 L570,780 L550,820 L500,825 L480,775 Z',
-            labelX: 525, labelY: 775, shortName: 'CAQUETÁ'
-        },
-        { 
-            id: 'Putumayo', name: 'Putumayo', 
-            path: 'M410,820 L480,810 L500,870 L480,910 L430,915 L410,865 Z',
-            labelX: 455, labelY: 865, shortName: 'PUTUMAYO'
-        },
-        { 
-            id: 'Vaupés', name: 'Vaupés', 
-            path: 'M570,830 L650,820 L670,880 L650,920 L600,925 L570,875 Z',
-            labelX: 620, labelY: 875, shortName: 'VAUPÉS'
-        },
-        { 
-            id: 'Guainía', name: 'Guainía', 
-            path: 'M680,590 L760,580 L780,640 L760,680 L710,685 L680,635 Z',
-            labelX: 730, labelY: 635, shortName: 'GUAINÍA'
-        },
-        { 
-            id: 'Amazonas', name: 'Amazonas', 
-            path: 'M430,920 L570,910 L590,990 L570,1050 L480,1055 L430,1005 Z',
-            labelX: 510, labelY: 985, shortName: 'AMAZONAS'
-        },
-
-        // INSULAR - Islas del Caribe
-        { 
-            id: 'San Andrés y Providencia', name: 'San Andrés y Providencia', 
-            path: 'M150,100 L190,95 L195,130 L155,135 Z',
-            labelX: 172, labelY: 115, shortName: 'SAN ANDRÉS'
-        }
-    ];
 
     // Calcular valores min/max para la escala de color
     const values = data.map(d => d.value).filter(v => v > 0);
@@ -285,7 +285,7 @@ const ColombiaMap: React.FC<ColombiaMapProps> = ({
             >
                 <svg 
                     viewBox="0 0 900 1100" 
-                    className="w-full h-full max-h-[90%] drop-shadow-xl"
+                    className="w-full h-full max-h-[90%]"
                     style={{ overflow: 'visible' }}
                 >
                     {/* Definir gradientes y filtros para mejor apariencia */}

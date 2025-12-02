@@ -5,7 +5,7 @@ import {
 } from 'lucide-react';
 import ColombiaMap from '../components/ColombiaMap';
 import DetailedReportModal from '../components/DetailedReportModal';
-import { fetchProductionMap, fetchDemandRegion, fetchRoyaltiesMap } from '../services/api';
+import { fetchProductionMap, fetchDemandMap, fetchRoyaltiesMap } from '../services/api';
 import { MapData } from '../types';
 
 type LayerType = 'production' | 'demand' | 'royalties';
@@ -28,7 +28,7 @@ const GeographicAnalysis: React.FC = () => {
             try {
                 const [prod, dem, roy] = await Promise.all([
                     fetchProductionMap(),
-                    fetchDemandRegion(),
+                    fetchDemandMap(),
                     fetchRoyaltiesMap()
                 ]);
 

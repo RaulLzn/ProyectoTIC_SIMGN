@@ -4,7 +4,7 @@ import { Download, FileText, Table, CheckCircle, AlertCircle, Calendar } from 'l
 const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:8000') + '/api';
 
 const DescargaInforme: React.FC = () => {
-    const [selectedFormat, setSelectedFormat] = useState<'csv' | 'excel'>('csv');
+    const [selectedFormat, setSelectedFormat] = useState<'csv' | 'excel' | 'pdf'>('csv');
     const [selectedDatasets, setSelectedDatasets] = useState({
         produccion: true,
         demanda: true,
@@ -35,7 +35,12 @@ const DescargaInforme: React.FC = () => {
             // Trigger download
             const link = document.createElement('a');
             link.href = url;
-            link.setAttribute('download', `SIMGN_Informe_${new Date().toISOString().slice(0,10)}.${selectedFormat === 'csv' ? 'csv' : 'xls'}`);
+            
+            let extension = 'csv';
+            if (selectedFormat === 'excel') extension = 'xls';
+            if (selectedFormat === 'pdf') extension = 'pdf';
+            
+            link.setAttribute('download', `SIMGN_Informe_${new Date().toISOString().slice(0,10)}.${extension}`);
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
@@ -189,6 +194,18 @@ const DescargaInforme: React.FC = () => {
                             >
                                 <div className="font-semibold">Excel</div>
                                 <div className="text-xs text-slate-500 mt-1">Microsoft Excel Format</div>
+                            </button>
+
+                            <button
+                                onClick={() => setSelectedFormat('pdf')}
+                                className={`p-4 border-2 rounded-lg transition-all col-span-2 ${
+                                    selectedFormat === 'pdf'
+                                        ? 'border-blue-600 bg-blue-50 text-blue-700'
+                                        : 'border-slate-200 hover:border-slate-300'
+                                }`}
+                            >
+                                <div className="font-semibold">PDF (Informe Ejecutivo)</div>
+                                <div className="text-xs text-slate-500 mt-1">Resumen Estratégico Oficial</div>
                             </button>
                         </div>
                     </div>

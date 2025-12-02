@@ -25,23 +25,21 @@ const Layout: React.FC = () => {
     const location = useLocation();
 
     const navItems = [
-        { path: '/', label: 'Tablero General', icon: LayoutDashboard, badge: null },
+        { path: '/estadisticas', label: 'Estadísticas', icon: BarChart3, badge: null },
         { path: '/produccion', label: 'Producción', icon: Factory, badge: 'ANH' },
         { path: '/demanda', label: 'Demanda', icon: TrendingUp, badge: 'UPME' },
         { path: '/regalias', label: 'Regalías', icon: Coins, badge: 'MME' },
         { path: '/geografia', label: 'Mapa Interactivo', icon: Map, badge: null },
-        { path: '/estadisticas', label: 'Estadísticas', icon: BarChart3, badge: null },
         { path: '/descarga-informe', label: 'Descarga de Informe', icon: Download, badge: null },
     ];
 
     // Map routes to titles
     const titles: Record<string, string> = {
-        '/': 'Tablero de Control Integrado',
+        '/estadisticas': 'Estadísticas y Análisis',
         '/produccion': 'Análisis de Producción',
         '/demanda': 'Análisis de Demanda',
         '/regalias': 'Gestión de Regalías',
         '/geografia': 'Distribución Geográfica Nacional',
-        '/estadisticas': 'Estadísticas y Análisis',
         '/descarga-informe': 'Descarga de Informe'
     };
 

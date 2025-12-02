@@ -18,37 +18,7 @@ const Demanda: React.FC = () => {
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 
-    // Helper to map Regions to Departments for the Map Component
-    const mapRegionToDepartments = useCallback((regionData: any[]) => {
-        const mapping: Record<string, string[]> = {
-            'Costa Atlántica': ['La Guajira', 'Magdalena', 'Atlántico', 'Cesar', 'Bolívar', 'Sucre', 'Córdoba'],
-            'Centro': ['Bogotá D.C.', 'Cundinamarca', 'Boyacá', 'Meta'],
-            'NorOccidente': ['Antioquia', 'Chocó'],
-            'SurOccidente': ['Valle del Cauca', 'Cauca', 'Nariño'],
-            'NorOriente': ['Santander', 'Norte de Santander', 'Arauca'],
-            'Tolima-Huila': ['Tolima', 'Huila'],
-            'CQR': ['Casanare'],
-            'Magdalena Medio': ['Santander'], // Simplified mapping
-        };
 
-        const deptData: MapData[] = [];
-        regionData.forEach(r => {
-            const depts = mapping[r.region] || [];
-            depts.forEach(d => {
-                // Avoid duplicates if regions overlap (simple approach: last wins)
-                if (!deptData.find(x => x.departmentName === d)) {
-                    deptData.push({ 
-                        departmentId: d,
-                        departmentName: d, 
-                        value: r.value, 
-                        formattedValue: `${Math.round(r.value)} GBTUD`,
-                        metricLabel: 'Demanda (GBTUD)' 
-                    });
-                }
-            });
-        });
-        return deptData;
-    }, []);
 
     useEffect(() => {
         const loadData = async () => {
@@ -63,19 +33,27 @@ const Demanda: React.FC = () => {
                 
                 setScenariosData(scenarios);
                 setSectorsData(sectors);
-                setMapData(mapRegionToDepartments(map));
+                // Transform backend map data (already by department) to MapData format
+                const formattedMapData: MapData[] = map.map((item: any) => ({
+                    departmentId: item.name,
+                    departmentName: item.name,
+                    value: item.value,
+                    formattedValue: `${Math.round(item.value)} GBTUD`,
+                    metricLabel: 'Demanda (GBTUD)'
+                }));
+                setMapData(formattedMapData);
                 setBalanceData(balance);
                 
                 console.log('Loaded new demand data');
-            } catch (err) {
+            } catch (err: any) {
                 console.error("Error loading demand:", err);
-                setError("No se pudieron cargar los datos de demanda.");
+                setError(`Error: ${err.message || err}`);
             } finally {
                 setLoading(false);
             }
         };
         loadData();
-    }, [mapRegionToDepartments]);
+    }, []);
 
     // Calculate KPIs
     const kpis = useMemo(() => {

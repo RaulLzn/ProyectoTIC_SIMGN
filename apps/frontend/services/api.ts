@@ -253,6 +253,26 @@ export const fetchDemandBalance = async () => {
     return response.json();
 };
 
+// --- Statistics / Strategic Dashboard ---
+
+export const fetchStatsKpis = async () => {
+    const response = await fetch(`${API_URL}/stats/kpis`);
+    if (!response.ok) throw new Error('Failed to fetch stats KPIs');
+    return response.json();
+};
+
+export const fetchStatsProdVsRoyalties = async () => {
+    const response = await fetch(`${API_URL}/stats/production-vs-royalties`);
+    if (!response.ok) throw new Error('Failed to fetch stats production vs royalties');
+    return response.json();
+};
+
+export const fetchStatsRegionalBalance = async () => {
+    const response = await fetch(`${API_URL}/stats/regional-balance`);
+    if (!response.ok) throw new Error('Failed to fetch stats regional balance');
+    return response.json();
+};
+
 export const fetchProductionFilters = async (): Promise<ProductionFilterOptions> => {
     const response = await fetch(`${API_URL}/production/filters`);
     if (!response.ok) {

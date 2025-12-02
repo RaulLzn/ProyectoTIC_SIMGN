@@ -1,10 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy.orm import Session
-from sqlalchemy import func
+from sqlalchemy import func, desc
 from database import get_db
 import models
 import schemas
 from typing import List, Optional
+from datetime import datetime
 
 router = APIRouter()
 
@@ -451,13 +452,54 @@ def get_royalties_map(
         func.sum(models.Royalty.valor_liquidado).label('total')
     ).group_by(models.Royalty.departamento).all()
     
-    return [
-        {
-            "department": r.departamento,
+    # Normalization Mapping (DB -> Frontend)
+    dept_mapping = {
+        'ANTIOQUIA': 'Antioquia',
+        'ARAUCA': 'Arauca',
+        'ATLANTICO': 'Atlántico',
+        'BOLIVAR': 'Bolívar',
+        'BOYACA': 'Boyacá',
+        'CALDAS': 'Caldas',
+        'CAQUETA': 'Caquetá',
+        'CASANARE': 'Casanare',
+        'CAUCA': 'Cauca',
+        'CESAR': 'Cesar',
+        'CHOCO': 'Chocó',
+        'CORDOBA': 'Córdoba',
+        'CUNDINAMARCA': 'Cundinamarca',
+        'GUAJIRA': 'La Guajira',
+        'GUAVIARE': 'Guaviare',
+        'HUILA': 'Huila',
+        'MAGDALENA': 'Magdalena',
+        'META': 'Meta',
+        'NARIÑO': 'Nariño',
+        'NORTE DE SANTANDER': 'Norte de Santander',
+        'PUTUMAYO': 'Putumayo',
+        'QUINDIO': 'Quindío',
+        'RISARALDA': 'Risaralda',
+        'SANTANDER': 'Santander',
+        'SUCRE': 'Sucre',
+        'TOLIMA': 'Tolima',
+        'VALLE DEL CAUCA': 'Valle del Cauca',
+        'VICHADA': 'Vichada',
+        'AMAZONAS': 'Amazonas',
+        'VAUPES': 'Vaupés',
+        'GUAINIA': 'Guainía',
+        'SAN ANDRES': 'San Andrés y Providencia'
+    }
+
+    normalized_results = []
+    for r in results:
+        dept_name = r.departamento
+        # Try exact match, then upper match
+        norm_name = dept_mapping.get(dept_name) or dept_mapping.get(dept_name.upper()) or dept_name.title()
+        
+        normalized_results.append({
+            "department": norm_name,
             "value": r.total
-        }
-        for r in results
-    ]
+        })
+        
+    return normalized_results
 
 @router.get("/royalties/distribution")
 def get_royalties_distribution(
@@ -526,16 +568,12 @@ def get_royalties_ranking(
     results = query.with_entities(
         models.Royalty.campo,
         func.sum(models.Royalty.valor_liquidado).label('total'),
-        # We might need to aggregate types too, but for now let's simplify
-        # If we need types per field, we'd need a more complex query or just return the dominant one
     ).group_by(models.Royalty.campo).order_by(desc('total')).limit(limit).all()
     
     return [
         {
             "name": r.campo,
             "value": r.total,
-            # For the icon logic (Gas/Oil), we might need to fetch it separately or include it in group_by
-            # For now, we'll send just the name and value. Frontend might lose the icon if we don't send type.
         }
         for r in results
     ]
@@ -561,6 +599,42 @@ def export_combined_data(
     Iterates through selected datasets and yields CSV rows.
     """
     
+    # ... (CSV/Excel logic remains) ...
+    
+    if format == 'pdf':
+        from reports import PDFReportGenerator
+        
+        # Gather Data for Report
+        # 1. KPIs
+        kpis = get_stats_kpis(db)
+        
+        # 2. Top Operators
+        # Reusing logic from get_production_ranking
+        top_ops_query = db.query(
+            models.Production.operadora.label('name'),
+            func.sum(models.Production.produccion_mensual).label('total')
+        ).group_by(models.Production.operadora).order_by(desc('total')).limit(5).all()
+        
+        total_prod = db.query(func.sum(models.Production.produccion_mensual)).scalar() or 1
+        top_operators = [{"name": r.name, "value": (r.total / total_prod) * 100} for r in top_ops_query]
+        
+        # 3. Regional Balance
+        regional_balance = get_stats_regional_balance(db)
+        
+        report_data = {
+            "kpis": kpis,
+            "top_operators": top_operators,
+            "regional_balance": regional_balance
+        }
+        
+        pdf_buffer = PDFReportGenerator().generate(report_data)
+        
+        return StreamingResponse(
+            pdf_buffer,
+            media_type="application/pdf",
+            headers={"Content-Disposition": f"attachment; filename=SIMGN_Informe_Ejecutivo_{datetime.now().strftime('%Y%m%d')}.pdf"}
+        )
+
     delimiter = ',' if format == 'csv' else '\t'
     
     def iter_csv():
@@ -568,30 +642,46 @@ def export_combined_data(
         writer = csv.writer(output, delimiter=delimiter)
         
         # Write Header
-        writer.writerow(['ID', 'Tipo', 'Periodo', 'Entidad Territorial', 'Concepto', 'Valor', 'Unidad', 'Fuente', 'Validado'])
+        writer.writerow(['ID', 'Tipo', 'Año', 'Mes', 'Entidad Territorial', 'Concepto', 'Valor', 'Unidad', 'Fuente', 'Validado'])
         yield output.getvalue()
         output.seek(0)
         output.truncate(0)
         
+        # Helper to parse dates
+        start_year, start_month = (None, None)
+        end_year, end_month = (None, None)
+        
+        if fecha_inicio:
+            try:
+                dt = datetime.strptime(fecha_inicio, '%Y-%m-%d')
+                start_year, start_month = dt.year, dt.month
+            except: pass
+            
+        if fecha_fin:
+            try:
+                dt = datetime.strptime(fecha_fin, '%Y-%m-%d')
+                end_year, end_month = dt.year, dt.month
+            except: pass
+
         # 1. Production Data
         if produccion:
             query = db.query(models.Production)
-            if fecha_inicio:
-                query = query.filter(models.Production.fecha_periodo >= fecha_inicio)
-            if fecha_fin:
-                query = query.filter(models.Production.fecha_periodo <= fecha_fin)
+            if start_year:
+                query = query.filter(models.Production.anio >= start_year)
+            if end_year:
+                query = query.filter(models.Production.anio <= end_year)
                 
-            # Use yield_per to fetch in chunks and avoid loading all into memory
             for row in query.yield_per(1000):
                 writer.writerow([
                     row.id,
                     'Producción',
-                    row.fecha_periodo,
-                    row.entidad_territorial,
+                    row.anio,
+                    row.mes,
+                    f"{row.departamento} - {row.municipio}",
                     row.campo,
-                    row.valor,
-                    row.unidad_medida,
-                    'ANH', # Fuente defaults to ANH
+                    row.produccion_mensual,
+                    'KPC', # Assuming KPC based on models comment
+                    'ANH',
                     'Sí'
                 ])
                 yield output.getvalue()
@@ -601,21 +691,22 @@ def export_combined_data(
         # 2. Demand Data
         if demanda:
             query = db.query(models.Demand)
-            if fecha_inicio:
-                query = query.filter(models.Demand.fecha_periodo >= fecha_inicio)
-            if fecha_fin:
-                query = query.filter(models.Demand.fecha_periodo <= fecha_fin)
+            if start_year:
+                query = query.filter(models.Demand.anio >= start_year)
+            if end_year:
+                query = query.filter(models.Demand.anio <= end_year)
                 
             for row in query.yield_per(1000):
                 writer.writerow([
                     row.id,
                     'Demanda',
-                    row.fecha_periodo,
-                    row.entidad_territorial,
-                    row.region, # Concepto maps to Region for Demand
-                    row.valor_real, # Use valor_real
-                    row.unidad_medida,
-                    'XM', # Fuente defaults to XM
+                    row.anio,
+                    row.mes,
+                    row.region,
+                    row.sector,
+                    row.demanda,
+                    'GBTUD',
+                    'XM',
                     'Sí'
                 ])
                 yield output.getvalue()
@@ -625,23 +716,22 @@ def export_combined_data(
         # 3. Royalties Data
         if regalias:
             query = db.query(models.Royalty)
-            # Royalties usually have anio/mes, but we need to check if they have fecha_periodo column populated
-            # Based on models.py (viewed earlier), Royalty has fecha_periodo
-            if fecha_inicio:
-                query = query.filter(models.Royalty.fecha_periodo >= fecha_inicio)
-            if fecha_fin:
-                query = query.filter(models.Royalty.fecha_periodo <= fecha_fin)
+            if start_year:
+                query = query.filter(models.Royalty.anio >= start_year)
+            if end_year:
+                query = query.filter(models.Royalty.anio <= end_year)
                 
             for row in query.yield_per(1000):
                 writer.writerow([
                     row.id,
                     'Regalías',
-                    row.fecha_periodo,
-                    row.entidad_territorial,
+                    row.anio,
+                    row.mes,
+                    f"{row.departamento} - {row.municipio}",
                     row.campo,
-                    row.valor,
-                    row.unidad_medida,
-                    'ANM', # Fuente defaults to ANM
+                    row.valor_liquidado,
+                    'COP',
+                    'ANM',
                     'Sí'
                 ])
                 yield output.getvalue()
@@ -736,71 +826,61 @@ def get_demand_by_sector(db: Session = Depends(get_db)):
         if r.total > 0
     ]
 
-@router.get("/demand/scenarios")
-def get_demand_scenarios(db: Session = Depends(get_db)):
-    """Get demand scenarios (Real vs Projected)"""
-    # Filter for 'Agregado' sector to get totals
-    query = db.query(
-        models.Demand.anio,
-        models.Demand.escenario,
-        func.sum(models.Demand.demanda).label('total')
-    ).filter(
-        models.Demand.sector == 'Agregado',
-        models.Demand.region == 'Nacional'
-    ).group_by(models.Demand.anio, models.Demand.escenario)
-    
-    results = query.all()
-    
-    # Pivot data: { year: 2024, Bajo: 100, Medio: 120, ... }
-    data_by_year = {}
-    for row in results:
-        year = row.anio
-        if year not in data_by_year:
-            data_by_year[year] = {"year": year}
-        data_by_year[year][row.escenario] = row.total
-        
-    return sorted(list(data_by_year.values()), key=lambda x: x['year'])
-
 @router.get("/demand/sectors")
-def get_demand_sectors(db: Session = Depends(get_db)):
-    """Get demand by sector (Stacked Area Chart)"""
-    # Filter for 'Medio' scenario and exclude 'Agregado'
-    query = db.query(
+def get_demand_sectors_trend(db: Session = Depends(get_db)):
+    """
+    Get demand trend by sector (Stacked Area Chart data).
+    Returns: [{ "year": 2024, "Industrial": 120, "Residencial": 80, ... }, ...]
+    """
+    # Query sum of demand by Year and Sector (Scenario Medio)
+    results = db.query(
         models.Demand.anio,
         models.Demand.sector,
-        func.sum(models.Demand.demanda).label('total')
+        func.sum(models.Demand.demanda).label("total")
     ).filter(
         models.Demand.escenario == 'Medio',
-        models.Demand.sector != 'Agregado'
-    ).group_by(models.Demand.anio, models.Demand.sector)
+        models.Demand.sector != 'Agregado' # Exclude aggregate if present
+    ).group_by(models.Demand.anio, models.Demand.sector).all()
     
-    results = query.all()
-    
+    # Pivot Data
     data_by_year = {}
-    for row in results:
-        year = row.anio
-        if year not in data_by_year:
-            data_by_year[year] = {"year": year}
-        data_by_year[year][row.sector] = row.total
+    for r in results:
+        if r.anio not in data_by_year:
+            data_by_year[r.anio] = {"year": r.anio}
+        data_by_year[r.anio][r.sector] = r.total
         
-    return sorted(list(data_by_year.values()), key=lambda x: x['year'])
-
-@router.get("/demand/map")
-def get_demand_map(db: Session = Depends(get_db)):
-    """Get demand by region for map (Heatmap)"""
-    # Filter for 'Medio' scenario and exclude 'Nacional'
-    # Get average annual demand for the projection period (e.g., > 2023)
-    query = db.query(
-        models.Demand.region,
-        func.avg(models.Demand.demanda).label('avg_demand')
-    ).filter(
-        models.Demand.escenario == 'Medio',
-        models.Demand.region != 'Nacional',
-        models.Demand.anio >= 2024
-    ).group_by(models.Demand.region)
+    # Convert to list and sort
+    final_data = sorted(list(data_by_year.values()), key=lambda x: x["year"])
     
-    results = query.all()
-    return [{"region": row.region, "value": row.avg_demand} for row in results]
+    return final_data
+
+@router.get("/demand/scenarios")
+def get_demand_scenarios(db: Session = Depends(get_db)):
+    """
+    Get demand scenarios (Real vs Projected) pivoted for Recharts.
+    Returns: [{ "year": 2024, "Bajo": 100, "Medio": 120, "Alto": 140 }, ...]
+    """
+    # Filter for 'Agregado' sector to get totals
+    results = db.query(
+        models.Demand.anio,
+        models.Demand.escenario,
+        func.sum(models.Demand.demanda).label("total")
+    ).filter(models.Demand.sector == 'Agregado').group_by(models.Demand.anio, models.Demand.escenario).all()
+    
+    # Pivot Data
+    data_by_year = {}
+    for r in results:
+        if r.anio not in data_by_year:
+            data_by_year[r.anio] = {"year": r.anio}
+        
+        # Map scenario name to key (handle potential casing issues if needed)
+        scenario_key = r.escenario
+        data_by_year[r.anio][scenario_key] = r.total
+        
+    # Convert to list and sort
+    final_data = sorted(list(data_by_year.values()), key=lambda x: x["year"])
+    
+    return final_data
 
 @router.get("/demand/balance")
 def get_demand_balance(db: Session = Depends(get_db)):
@@ -812,6 +892,7 @@ def get_demand_balance(db: Session = Depends(get_db)):
     ).filter(
         models.Demand.escenario == 'Alto',
         models.Demand.sector == 'Agregado',
+        models.Demand.region == 'Nacional', # Ensure we don't double count
         models.Demand.anio >= 2024
     ).group_by(models.Demand.anio).all()
     
@@ -859,6 +940,142 @@ def get_demand_balance(db: Session = Depends(get_db)):
         
     return result
 
+# --- Statistics / Strategic Dashboard Endpoints ---
+
+@router.get("/stats/kpis")
+def get_stats_kpis(db: Session = Depends(get_db)):
+    """Get Global KPIs for the Dashboard"""
+    current_year = 2023 # Or dynamic
+    
+    # 1. Total Production (Annual)
+    prod_total = db.query(func.sum(models.Production.produccion_mensual)).filter(models.Production.anio == current_year).scalar() or 0
+    prod_avg_gbtud = (prod_total / 365) # KPC/year -> GBTUD (approx)
+    
+    # 2. Total Royalties (Annual & Historical)
+    royalty_annual = db.query(func.sum(models.Royalty.valor_liquidado)).filter(models.Royalty.anio == current_year).scalar() or 0
+    royalty_total_historical = db.query(func.sum(models.Royalty.valor_liquidado)).scalar() or 0
+    
+    # 3. Total Demand (Annual - Real or Projected)
+    demand_total = db.query(func.sum(models.Demand.demanda)).filter(
+        models.Demand.anio == current_year,
+        models.Demand.escenario == 'Medio', # Use Medio as baseline
+        models.Demand.sector == 'Agregado',
+        models.Demand.region == 'Nacional'
+    ).scalar() or 0
+    
+    # 4. Coverage Ratio
+    coverage = (prod_avg_gbtud / demand_total * 100) if demand_total > 0 else 0
+    
+    return {
+        "year": current_year,
+        "production_avg_gbtud": prod_avg_gbtud,
+        "royalties_annual_cop": royalty_annual,
+        "royalties_total_historical_cop": royalty_total_historical,
+        "demand_avg_gbtud": demand_total, 
+        "coverage_ratio": coverage
+    }
+
+@router.get("/stats/production-vs-royalties")
+def get_stats_prod_vs_royalties(db: Session = Depends(get_db)):
+    """Get Time Series for Production Volume vs Royalties Value"""
+    # Production by Year
+    prod_query = db.query(
+        models.Production.anio,
+        func.sum(models.Production.produccion_mensual).label('volume')
+    ).group_by(models.Production.anio).all()
+    
+    prod_map = {r.anio: r.volume for r in prod_query}
+    
+    # Royalties by Year
+    roy_query = db.query(
+        models.Royalty.anio,
+        func.sum(models.Royalty.valor_liquidado).label('value')
+    ).group_by(models.Royalty.anio).all()
+    
+    roy_map = {r.anio: r.value for r in roy_query}
+    
+    years = sorted(list(set(prod_map.keys()) | set(roy_map.keys())))
+    
+    result = []
+    for y in years:
+        p_vol = prod_map.get(y, 0)
+        r_val = roy_map.get(y, 0)
+        
+        # Only include years where we have BOTH data points (Intersection)
+        # This avoids showing drops to zero for future projections or missing historical data
+        if p_vol > 0 and r_val > 0:
+            result.append({
+                "year": y,
+                "production_vol": p_vol,
+                "royalties_val": r_val
+            })
+            
+    return result
+
+@router.get("/stats/regional-balance")
+def get_stats_regional_balance(db: Session = Depends(get_db)):
+    """Get Supply vs Demand by Department"""
+    # 1. Production by Department (Supply)
+    prod_query = db.query(
+        models.Production.departamento,
+        func.sum(models.Production.produccion_mensual).label('volume')
+    ).filter(models.Production.anio == 2023).group_by(models.Production.departamento).all()
+    
+    supply_map = {r.departamento: (r.volume / 365) for r in prod_query} # GBTUD
+    
+    # 2. Demand by Region (Demand) -> Map to Departments
+    demand_query = db.query(
+        models.Demand.region,
+        func.sum(models.Demand.demanda).label('demand')
+    ).filter(
+        models.Demand.anio == 2023,
+        models.Demand.escenario == 'Medio',
+        models.Demand.sector == 'Agregado'
+    ).group_by(models.Demand.region).all()
+    
+    # Mapping Logic (UPME Region -> Departments)
+    mapping = {
+        'Costa Atlántica': ['Atlántico', 'La Guajira', 'Magdalena'],
+        'Costa Interior': ['Bolívar', 'Cesar', 'Córdoba', 'Sucre'],
+        'Centro': ['Bogotá D.C.', 'Cundinamarca', 'Boyacá', 'Meta'],
+        'NorOccidente': ['Antioquia', 'Chocó'],
+        'SurOccidente': ['Valle del Cauca', 'Cauca', 'Nariño'],
+        'NorOriente': ['Santander', 'Norte de Santander', 'Arauca'],
+        'Tolima-Huila': ['Tolima', 'Huila'],
+        'CQR': ['Casanare'],
+        'Magdalena Medio': ['Santander'],
+    }
+    
+    dept_demand = {}
+    
+    for r in demand_query:
+        region = r.region
+        val = r.demand
+        depts = mapping.get(region, [])
+        if not depts: continue
+        
+        val_per_dept = val / len(depts)
+        for d in depts:
+            dept_demand[d] = dept_demand.get(d, 0) + val_per_dept
+            
+    # Combine
+    all_depts = set(supply_map.keys()) | set(dept_demand.keys())
+    result = []
+    
+    for d in all_depts:
+        s = supply_map.get(d, 0)
+        dem = dept_demand.get(d, 0)
+        balance = s - dem
+        result.append({
+            "department": d,
+            "supply": s,
+            "demand": dem,
+            "balance": balance,
+            "status": "Superávit" if balance > 0 else "Déficit"
+        })
+        
+    return sorted(result, key=lambda x: x['balance'], reverse=True)
+
 @router.get("/demand/region")
 def get_demand_by_region(db: Session = Depends(get_db)):
     """
@@ -875,10 +1092,53 @@ def get_demand_by_region(db: Session = Depends(get_db)):
         if r.total > 0
     ]
 
+@router.get("/demand/map")
+def get_demand_map(db: Session = Depends(get_db)):
+    """
+    Get demand distribution mapped to departments for the map visualization.
+    """
+    # Query demand by region
+    results = db.query(
+        models.Demand.region,
+        func.sum(models.Demand.demanda).label("total")
+    ).group_by(models.Demand.region).all()
+    
+    # Mapping from UPME Regions to Departments
+    mapping = {
+        'Costa Atlántica': ['Atlántico', 'La Guajira', 'Magdalena'],
+        'Costa Interior': ['Bolívar', 'Cesar', 'Córdoba', 'Sucre'],
+        'Centro': ['Bogotá D.C.', 'Cundinamarca', 'Boyacá', 'Meta'],
+        'NorOccidente': ['Antioquia', 'Chocó'],
+        'SurOccidente': ['Valle del Cauca', 'Cauca', 'Nariño'],
+        'NorOriente': ['Santander', 'Norte de Santander', 'Arauca'],
+        'Tolima-Huila': ['Tolima', 'Huila'],
+        'CQR': ['Casanare'],
+        'Magdalena Medio': ['Santander'],
+    }
+    
+    dept_demand = {}
+    
+    for r in results:
+        region = r.region
+        val = r.total
+        if not val or val <= 0: continue
+        
+        depts = mapping.get(region, [])
+        if not depts: continue
+        
+        # Distribute regional demand evenly among departments in that region
+        val_per_dept = val / len(depts)
+        for d in depts:
+            dept_demand[d] = dept_demand.get(d, 0) + val_per_dept
+            
+    return [
+        {"name": k, "value": v}
+        for k, v in dept_demand.items()
+    ]
+
 @router.get("/demand/stats")
 def get_demand_stats(db: Session = Depends(get_db)):
     total_demand = db.query(models.Demand).with_entities(models.Demand.demanda).all()
     total = sum([v[0] for v in total_demand if v[0]])
     count = db.query(models.Demand).count()
     return {"total_records": count, "total_demand_gbtud": total}
-

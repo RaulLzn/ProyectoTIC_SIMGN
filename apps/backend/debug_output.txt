@@ -1,0 +1,62 @@
+Starting debug script...
+--- DEMAND REGIONS ---
+'CQR': 384
+'Centro': 384
+'Costa Atlántica': 384
+'Costa Interior': 384
+'Magdalena Medio': 384
+'Nacional': 4614
+'NorOccidente': 384
+'NorOriente': 384
+'SurOccidente': 384
+'Tolima-Huila': 384
+
+--- ROYALTY DEPARTMENTS ---
+'ANTIOQUIA': 3463
+'ARAUCA': 14066
+'ATLANTICO': 417
+'BOLIVAR': 2076
+'BOYACA': 4328
+'CAQUETA': 5
+'CASANARE': 76435
+'CAUCA': 699
+'CESAR': 6708
+'CORDOBA': 1876
+'CUNDINAMARCA': 859
+'DEPARTAMENTO NN': 559
+'GUAJIRA': 2027
+'HUILA': 21092
+'MAGDALENA': 1155
+'META': 28375
+'NARIÑO': 257
+'NORTE DE SANTANDER': 3785
+'PUTUMAYO': 9053
+'SANTANDER': 13231
+'SUCRE': 2359
+'TOLIMA': 10685
+'VICHADA': 60
+
+--- PRODUCTION DEPARTMENTS ---
+'': 288
+'Antioquia': 897
+'Arauca': 4595
+'Atlántico': 3582
+'Bolívar': 131
+'Bolívar / Santander': 2510
+'Boyacá': 1755
+'Casanare': 19123
+'Cesar': 6056
+'Costa Afuera': 360
+'Córdoba': 13910
+'Córdoba / Sucre': 1358
+'Huila': 2554
+'Internacional': 60
+'La Guajira': 15436
+'Magdalena': 174
+'Meta': 3028
+'Norte de Santander': 1876
+'Putumayo': 4215
+'Santander': 31759
+'Sucre': 5628
+'Sucre / Córdoba': 5129
+'Tolima': 1391

@@ -21,12 +21,11 @@ const Sidebar: React.FC = () => {
     const [showHelpMenu, setShowHelpMenu] = useState(false);
 
     const navItems = [
-        { path: '/', label: 'Tablero General', icon: LayoutDashboard, badge: null },
+        { path: '/estadisticas', label: 'Estadísticas', icon: BarChart3, badge: null },
         { path: '/produccion', label: 'Producción', icon: Factory, badge: 'ANH' },
         { path: '/demanda', label: 'Demanda', icon: TrendingUp, badge: 'UPME' },
         { path: '/regalias', label: 'Regalías', icon: Coins, badge: 'MME' },
         { path: '/geografia', label: 'Mapa Interactivo', icon: Map, badge: null },
-        { path: '/estadisticas', label: 'Estadísticas', icon: BarChart3, badge: null },
         { path: '/descarga-informe', label: 'Descarga de Informe', icon: Download, badge: null },
     ];
 
